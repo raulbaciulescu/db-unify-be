@@ -1,0 +1,187 @@
+[
+  {
+    "tableName": "IERARHIE_PRODUSE",
+    "columns": [
+      {
+        "columnName": "COD_PARINTE",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "NUME_PARINTE",
+        "dataType": "VARCHAR2"
+      },
+      {
+        "columnName": "COD_COPIL",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "NUME_COPIL",
+        "dataType": "VARCHAR2"
+      }
+    ]
+  },
+  {
+    "tableName": "LISTA_PROCEDURI_UTILIZATOR",
+    "columns": [
+      {
+        "columnName": "NUME_SCHEMA",
+        "dataType": "VARCHAR2"
+      },
+      {
+        "columnName": "NUME_PROCEDURA",
+        "dataType": "VARCHAR2"
+      }
+    ]
+  },
+  {
+    "tableName": "MULTPRODUSE",
+    "columns": [
+      {
+        "columnName": "COD",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "DENUMIRE",
+        "dataType": "VARCHAR2"
+      },
+      {
+        "columnName": "CODP",
+        "dataType": "NUMBER"
+      }
+    ]
+  },
+  {
+    "tableName": "PATH_ENUMERATION",
+    "columns": [
+      {
+        "columnName": "PRODUS_ID",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "NUME_PRODUS",
+        "dataType": "VARCHAR2"
+      },
+      {
+        "columnName": "PATH",
+        "dataType": "VARCHAR2"
+      }
+    ]
+  },
+  {
+    "tableName": "PRODUSE",
+    "columns": [
+      {
+        "columnName": "COD",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "DENUMIRE",
+        "dataType": "VARCHAR2"
+      }
+    ]
+  },
+  {
+    "tableName": "STRUCTURA",
+    "columns": [
+      {
+        "columnName": "COD",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "CODP",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "POZITIA",
+        "dataType": "NUMBER"
+      }
+    ]
+  },
+  {
+    "tableName": "STUDENT_INFO",
+    "columns": [
+      {
+        "columnName": "NUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "PRENUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "COD_SECTIA",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "DENUMIRE_SECTIA",
+        "dataType": "VARCHAR2"
+      },
+      {
+        "columnName": "AN_STUDIU",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "GRUPA",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "MEDIA",
+        "dataType": "NUMBER"
+      }
+    ]
+  },
+  {
+    "tableName": "STUDENT_MEDIA_ANUALA",
+    "columns": [
+      {
+        "columnName": "NUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "PRENUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "GRUPA",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "MEDIA",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "MEDIA_SECTIE",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "DISTANTA_FATA_DE_MEDIE",
+        "dataType": "NUMBER"
+      },
+      {
+        "columnName": "POZITIE_ANUALA",
+        "dataType": "NUMBER"
+      }
+    ]
+  },
+  {
+    "tableName": "TOP_3_MEDII_GRUPA",
+    "columns": [
+      {
+        "columnName": "NUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "PRENUME",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "GRUPA",
+        "dataType": "CHAR"
+      },
+      {
+        "columnName": "MEDIA",
+        "dataType": "NUMBER"
+      }
+    ]
+  }
+]

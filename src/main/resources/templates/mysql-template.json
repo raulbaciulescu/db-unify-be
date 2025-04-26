@@ -1,0 +1,31 @@
+[
+  {
+    "tableName": "student",
+    "columns": [
+      {
+        "columnName": "id",
+        "dataType": "int"
+      },
+      {
+        "columnName": "first_name",
+        "dataType": "varchar"
+      },
+      {
+        "columnName": "last_name",
+        "dataType": "varchar"
+      },
+      {
+        "columnName": "email",
+        "dataType": "varchar"
+      },
+      {
+        "columnName": "date_of_birth",
+        "dataType": "date"
+      },
+      {
+        "columnName": "enrollment_date",
+        "dataType": "timestamp"
+      }
+    ]
+  }
+]

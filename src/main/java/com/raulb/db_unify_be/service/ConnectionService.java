@@ -1,0 +1,52 @@
+package com.raulb.db_unify_be.service;
+
+import com.raulb.db_unify_be.entity.Connection;
+import com.raulb.db_unify_be.repository.ConnectionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ConnectionService {
+    private final ConnectionRepository repo;
+    private final DynamicDataSourceFactory factory;
+
+    public Connection createAndConnect(Connection conn) {
+        Connection saved = repo.save(conn);
+        saved = repo.findById(saved.getId()).orElseThrow();
+        try {
+            factory.createAndValidate(saved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            repo.delete(saved);
+            return null;
+        }
+
+        return saved;
+    }
+
+    public List<Connection> findAll() {
+        return repo.findAll();
+    }
+
+    public void refreshConnection(Long id) {
+        Connection conn = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+
+        // Attempt to create and validate new DataSource
+        factory.createAndValidate(conn);
+    }
+
+    public void initializeAllConnections() {
+        repo.findAll().forEach(conn -> {
+            try {
+                factory.createAndValidate(conn);
+                System.out.println("Connected: " + conn.getName());
+            } catch (Exception e) {
+                System.err.println("Connection failed: " + conn.getName() + " - " + e.getMessage());
+            }
+        });
+    }
+}
