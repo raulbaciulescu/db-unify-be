@@ -1,10 +1,13 @@
 package com.raulb.db_unify_be.controller;
 
+import com.raulb.db_unify_be.dtos.ConnectionResponse;
+import com.raulb.db_unify_be.dtos.RefreshConnectionResult;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.service.ConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/connections")
 @RequiredArgsConstructor
+@CrossOrigin
 public class ConnectionController {
     private final ConnectionService connectionService;
 
@@ -28,18 +32,18 @@ public class ConnectionController {
     }
 
     @PostMapping("/{id}/refresh")
-    public ResponseEntity<String> refreshConnection(@PathVariable Long id) {
+    public ResponseEntity<RefreshConnectionResult> refreshConnection(@PathVariable Long id) {
+        System.out.println("Testing connection for " + id);
         try {
             connectionService.refreshConnection(id);
-            return ResponseEntity.ok("Connection " + id + " is valid and refreshed.");
+            return ResponseEntity.ok(new RefreshConnectionResult(true));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Connection failed: " + e.getMessage());
+            return ResponseEntity.ok(new RefreshConnectionResult(false));
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Connection>> getAll() {
+    public ResponseEntity<List<ConnectionResponse>> getAll() {
         return ResponseEntity.ok(connectionService.findAll());
     }
 

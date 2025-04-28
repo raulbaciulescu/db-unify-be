@@ -1,5 +1,6 @@
 package com.raulb.db_unify_be.service;
 
+import com.raulb.db_unify_be.dtos.ConnectionResponse;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.repository.ConnectionRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,14 @@ public class ConnectionService {
         return saved;
     }
 
-    public List<Connection> findAll() {
-        return repo.findAll();
+    public List<ConnectionResponse> findAll() {
+        return repo.findAll()
+                .stream()
+                .map(c -> {
+                    factory.createAndValidate(c);
+                    return ConnectionMapper.toResponse(c, "connected");
+                })
+                .toList();
     }
 
     public void refreshConnection(Long id) {
