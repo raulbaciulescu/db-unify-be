@@ -47,10 +47,15 @@ public class MetadataService {
 
     private String getMetadataQuery(DatabaseType dbType) {
         return switch (dbType) {
-            case POSTGRES, SQLSERVER -> """
+            case POSTGRES -> """
             SELECT table_name, column_name, data_type
             FROM information_schema.columns
             WHERE table_schema = 'public'
+            ORDER BY table_name, ordinal_position
+        """;
+            case SQLSERVER -> """
+            SELECT table_schema, table_name, column_name, data_type
+            FROM information_schema.columns
             ORDER BY table_name, ordinal_position
         """;
             case MYSQL -> String.format("""

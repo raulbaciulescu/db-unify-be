@@ -8,9 +8,8 @@ public enum DatabaseType {
             case POSTGRES -> "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
             case MYSQL -> "jdbc:mysql://" + host + ":" + port + "/" + dbName;
             case ORACLE -> "jdbc:oracle:thin:@" + host + ":" + port + ":" + dbName;
-            //case SQLSERVER2 -> "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";integratedSecurity=true";
-            case SQLSERVER -> "jdbc:sqlserver://"  + host + ";databaseName=" + dbName + ";domain=DESKTOP-U827PMK\\SQLEXPRESS;integratedSecurity=true;authenticationScheme=NTLM";
-
+            case SQLSERVER ->
+                    "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";integratedSecurity=true;trustServerCertificate=true";
         };
     }
 

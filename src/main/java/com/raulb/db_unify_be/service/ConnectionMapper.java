@@ -3,13 +3,11 @@ package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.dtos.ConnectionResponse;
 import com.raulb.db_unify_be.entity.Connection;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConnectionMapper {
-
-    private ConnectionMapper() {
-        // Private constructor to prevent instantiation
-    }
-
     public static ConnectionResponse toResponse(Connection connection, String status) {
         if (connection == null) {
             return null;
