@@ -3,6 +3,7 @@ package com.raulb.db_unify_be.service;
 import com.raulb.db_unify_be.dtos.ConnectionResponse;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.repository.ConnectionRepository;
+import com.raulb.db_unify_be.util.ConnectionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

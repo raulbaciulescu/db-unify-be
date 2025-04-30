@@ -1,4 +1,4 @@
-package com.raulb.db_unify_be.service;
+package com.raulb.db_unify_be.util;
 
 
 import com.raulb.db_unify_be.dtos.ConnectionResponse;

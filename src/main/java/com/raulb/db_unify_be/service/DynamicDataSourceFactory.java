@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class DynamicDataSourceFactory {
-
     private final Map<Long, DataSource> cache = new ConcurrentHashMap<>();
 
     public DataSource createAndValidate(Connection conn) {
