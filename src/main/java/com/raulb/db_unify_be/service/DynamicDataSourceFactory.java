@@ -1,5 +1,6 @@
 package com.raulb.db_unify_be.service;
 
+import com.raulb.db_unify_be.entity.CachedDataSource;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.DatabaseType;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class DynamicDataSourceFactory {
-    private final Map<Long, DataSource> cache = new ConcurrentHashMap<>();
+    private final Map<Long, CachedDataSource> cache = new ConcurrentHashMap<>();
 
     public DataSource createAndValidate(Connection conn) {
         try {
@@ -32,7 +33,7 @@ public class DynamicDataSourceFactory {
 
             // Test connection
             try (java.sql.Connection testConn = ds.getConnection()) {
-                cache.put(conn.getId(), ds);
+                cache.put(conn.getId(), new CachedDataSource(conn, ds));
                 return ds;
             }
         } catch (SQLException e) {
@@ -41,10 +42,19 @@ public class DynamicDataSourceFactory {
     }
 
     public DataSource getCached(Long id) {
-        return cache.get(id);
+        CachedDataSource cached = cache.get(id);
+        return cached != null ? cached.dataSource() : null;
     }
 
     public void clearCache() {
         cache.clear();
+    }
+
+    public Connection getCachedByName(String dbName) {
+        return cache.values().stream()
+                .map(CachedDataSource::connection)
+                .filter(conn -> conn.getName().equalsIgnoreCase(dbName))
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -1,0 +1,224 @@
+{
+  "queryType": "SELECT",
+  "tables": [
+    "decathlon.decathlon_customers",
+    "population_db.population"
+  ],
+  "selectedColumns": [
+    "*"
+  ],
+  "whereCondition": null,
+  "groupByColumns": [],
+  "havingCondition": null,
+  "orderByColumns": null,
+  "originalSql": null,
+  "joins": [
+    {
+      "outer": false,
+      "right": false,
+      "left": false,
+      "natural": false,
+      "global": false,
+      "full": false,
+      "inner": true,
+      "simple": false,
+      "cross": false,
+      "semi": false,
+      "straight": false,
+      "apply": false,
+      "fromItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "decathlon_customers",
+        "fullyQualifiedName": "decathlon.decathlon_customers",
+        "schemaName": "decathlon",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "unPivot": null,
+        "indexHint": null,
+        "dblinkName": "decathlon_customers",
+        "nameParts": [
+          "decathlon_customers",
+          "decathlon"
+        ],
+        "astnode": {
+          "id": 5
+        }
+      },
+      "onExpressions": [
+        {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "population",
+              "fullyQualifiedName": "population_db.population",
+              "schemaName": "population_db",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "unPivot": null,
+              "indexHint": null,
+              "dblinkName": "population",
+              "nameParts": [
+                "population",
+                "population_db"
+              ],
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "population_db.population.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "decathlon_customers",
+              "fullyQualifiedName": "decathlon.decathlon_customers",
+              "schemaName": "decathlon",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "unPivot": null,
+              "indexHint": null,
+              "dblinkName": "decathlon_customers",
+              "nameParts": [
+                "decathlon_customers",
+                "decathlon"
+              ],
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "decathlon.decathlon_customers.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        }
+      ],
+      "usingColumns": [],
+      "joinWindow": null,
+      "onExpression": {
+        "leftExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "population",
+            "fullyQualifiedName": "population_db.population",
+            "schemaName": "population_db",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "unPivot": null,
+            "indexHint": null,
+            "dblinkName": "population",
+            "nameParts": [
+              "population",
+              "population_db"
+            ],
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "population_db.population.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "rightExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "decathlon_customers",
+            "fullyQualifiedName": "decathlon.decathlon_customers",
+            "schemaName": "decathlon",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "unPivot": null,
+            "indexHint": null,
+            "dblinkName": "decathlon_customers",
+            "nameParts": [
+              "decathlon_customers",
+              "decathlon"
+            ],
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "decathlon.decathlon_customers.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "oldOracleJoinSyntax": 0,
+        "oraclePriorPosition": 0,
+        "stringExpression": "=",
+        "astnode": {
+          "id": 19
+        }
+      },
+      "innerJoin": true,
+      "rightItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "decathlon_customers",
+        "fullyQualifiedName": "decathlon.decathlon_customers",
+        "schemaName": "decathlon",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "unPivot": null,
+        "indexHint": null,
+        "dblinkName": "decathlon_customers",
+        "nameParts": [
+          "decathlon_customers",
+          "decathlon"
+        ],
+        "astnode": {
+          "id": 5
+        }
+      },
+      "windowJoin": false,
+      "astnode": {
+        "id": 15
+      }
+    }
+  ]
+}
