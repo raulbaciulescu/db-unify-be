@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(("/sqlCommand"))
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin
 public class QueryController {
     private final QueryService queryService;
     private final SqlParsingService sqlParsingService;

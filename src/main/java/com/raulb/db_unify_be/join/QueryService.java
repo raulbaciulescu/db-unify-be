@@ -15,16 +15,16 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class QueryService {
-
     private final SqlParsingService sqlParsingService;
     private final RowCountEstimator rowCountEstimator;
     private final JoinStrategySelector joinStrategySelector;
-    private final ConnectionRepository connectionRepository;
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
 
@@ -44,7 +44,7 @@ public class QueryService {
 
             String leftTable = getFullTableName(((Column) leftExpr).getTable());
             String rightTable = getFullTableName(((Column) rightExpr).getTable());
-//
+
             String leftKey = ((Column) leftExpr).getColumnName();
             String rightKey = ((Column) leftExpr).getColumnName();
 
@@ -74,7 +74,6 @@ public class QueryService {
             }
 
             List<Map<String, Object>> rightRows = tableData.get(rightTable);
-
             long leftSize = (current == null) ? tableSizes.get(leftTable) : current.size();
             long rightSize = tableSizes.get(rightTable);
 
@@ -86,19 +85,18 @@ public class QueryService {
     }
 
     private String getFullTableName(Table table) {
-        // e.g. "population_db.population"
-        String schema = table.getSchemaName(); // "population_db"
-        String name = table.getName();         // "population"
+        String schema = table.getSchemaName(); // e.g., "population_db"
+        String name = table.getName();         // e.g., "population"
         return (schema != null && !schema.isBlank()) ? schema + "." + name : name;
     }
 
     private String getSchemaName(String fullTableName) {
-        // e.g. "population_db.population" → "population_db"
-        return fullTableName.split("\\.")[0];
+        int dotIndex = fullTableName.indexOf('.');
+        return dotIndex > 0 ? fullTableName.substring(0, dotIndex) : fullTableName;
     }
 
     private String getSimpleTableName(String fullTableName) {
-        // e.g. "population_db.population" → "population"
-        return fullTableName.split("\\.")[1];
+        int dotIndex = fullTableName.indexOf('.');
+        return dotIndex > 0 ? fullTableName.substring(dotIndex + 1) : fullTableName;
     }
 }
