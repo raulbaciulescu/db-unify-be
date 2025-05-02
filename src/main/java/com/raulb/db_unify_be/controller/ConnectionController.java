@@ -47,14 +47,9 @@ public class ConnectionController {
         return ResponseEntity.ok(connectionService.findAll());
     }
 
-//    @DeleteMapping("/{dbType}/{id}")
-//    public ResponseEntity<Void> delete(@PathVariable String dbType, @PathVariable Long id) {
-//        connectionService.delete(dbType, id);
-//        return ResponseEntity.noContent().build();
-//    }
-
-    //    @GetMapping("/{dbType}")
-//    public ResponseEntity<List<Connection>> getAll(@PathVariable String dbType) {
-//        return ResponseEntity.ok(connectionService.findAll(dbType));
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        connectionService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

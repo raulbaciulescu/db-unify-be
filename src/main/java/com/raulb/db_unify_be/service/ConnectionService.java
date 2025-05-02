@@ -57,4 +57,8 @@ public class ConnectionService {
             }
         });
     }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
 }
