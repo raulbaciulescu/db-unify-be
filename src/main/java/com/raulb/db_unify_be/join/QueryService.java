@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class QueryService {
     private final JoinStrategySelector joinStrategySelector;
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
+
 
     public List<Map<String, Object>> execute(String sql) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
@@ -46,7 +48,7 @@ public class QueryService {
             String rightTable = getFullTableName(((Column) rightExpr).getTable());
 
             String leftKey = ((Column) leftExpr).getColumnName();
-            String rightKey = ((Column) leftExpr).getColumnName();
+            String rightKey = ((Column) rightExpr).getColumnName();  // <- should use rightExpr here
 
             // Load left table if needed
             List<Map<String, Object>> leftRows = current;
@@ -81,7 +83,33 @@ public class QueryService {
             current = strategy.join(leftRows, rightRows, leftKey, rightKey);
         }
 
-        return current;
+        // Filter to selected columns
+        return filterSelectedColumns(current, parsedQuery.getSelectedColumns());
+    }
+
+    private List<Map<String, Object>> filterSelectedColumns(List<Map<String, Object>> rows, List<String> selectedColumns) {
+        if (selectedColumns == null || selectedColumns.isEmpty() || (selectedColumns.size() == 1 && selectedColumns.get(0).equals("*"))) {
+            return rows; // SELECT *: return everything
+        }
+
+        return rows.stream()
+                .map(row -> {
+                    Map<String, Object> filtered = new HashMap<>();
+                    for (String col : selectedColumns) {
+                        if (row.containsKey(col)) {
+                            filtered.put(col, row.get(col));
+                        } else {
+                            // Try last part in case it's a fully qualified name but row uses simple name
+                            String[] parts = col.split("\\.");
+                            String shortCol = parts[parts.length - 1];
+                            if (row.containsKey(shortCol)) {
+                                filtered.put(shortCol, row.get(shortCol));
+                            }
+                        }
+                    }
+                    return filtered;
+                })
+                .toList();
     }
 
     private String getFullTableName(Table table) {
