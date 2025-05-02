@@ -38,53 +38,63 @@ public class QueryService {
         List<Map<String, Object>> current = null;
 
         for (Join join : parsedQuery.getJoins()) {
-            Expression expression = join.getOnExpression();
-            if (!(expression instanceof EqualsTo)) continue;
-            EqualsTo equalsTo = (EqualsTo) expression;
-            Expression leftExpr = equalsTo.getLeftExpression();
-            Expression rightExpr = equalsTo.getRightExpression();
-
-            String leftTable = getFullTableName(((Column) leftExpr).getTable());
-            String rightTable = getFullTableName(((Column) rightExpr).getTable());
-
-            String leftKey = ((Column) leftExpr).getColumnName();
-            String rightKey = ((Column) rightExpr).getColumnName();  // <- should use rightExpr here
-
-            // Load left table if needed
-            List<Map<String, Object>> leftRows = current;
-            if (!tableData.containsKey(leftTable)) {
-                Connection conn = dataSourceFactory.getCachedByName(getSchemaName(leftTable));
-                String tableName = getSimpleTableName(leftTable);
-
-                List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
-                tableData.put(leftTable, rows);
-                tableSizes.put(leftTable, rowCountEstimator.estimateRowCount(conn, tableName).orElse((long) rows.size()));
-
-                if (current == null) leftRows = rows;
-            } else if (current == null) {
-                leftRows = tableData.get(leftTable);
-            }
-
-            // Load right table if needed
-            if (!tableData.containsKey(rightTable)) {
-                Connection conn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
-                String tableName = getSimpleTableName(rightTable);
-
-                List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
-                tableData.put(rightTable, rows);
-                tableSizes.put(rightTable, rowCountEstimator.estimateRowCount(conn, tableName).orElse((long) rows.size()));
-            }
-
-            List<Map<String, Object>> rightRows = tableData.get(rightTable);
-            long leftSize = (current == null) ? tableSizes.get(leftTable) : current.size();
-            long rightSize = tableSizes.get(rightTable);
-
-            JoinAlgorithm strategy = joinStrategySelector.choose(leftSize, rightSize);
-            current = strategy.join(leftRows, rightRows, leftKey, rightKey);
+            current = performJoin(join, current, tableData, tableSizes);
         }
 
-        // Filter to selected columns
         return filterSelectedColumns(current, parsedQuery.getSelectedColumns());
+    }
+
+    private List<Map<String, Object>> performJoin(
+            Join join,
+            List<Map<String, Object>> current,
+            Map<String, List<Map<String, Object>>> tableData,
+            Map<String, Long> tableSizes) {
+
+        Expression expression = join.getOnExpression();
+        if (!(expression instanceof EqualsTo)) return current;
+
+        EqualsTo equalsTo = (EqualsTo) expression;
+        Column leftCol = (Column) equalsTo.getLeftExpression();
+        Column rightCol = (Column) equalsTo.getRightExpression();
+
+        String leftTable = getFullTableName(leftCol.getTable());
+        String rightTable = getFullTableName(rightCol.getTable());
+        String leftKey = leftCol.getColumnName();
+        String rightKey = rightCol.getColumnName();
+
+        List<Map<String, Object>> leftRows = current;
+        if (!tableData.containsKey(leftTable)) {
+            leftRows = loadTableIfNeeded(leftTable, tableData, tableSizes);
+            if (current == null) current = leftRows;
+        } else if (current == null) {
+            leftRows = tableData.get(leftTable);
+        }
+
+        if (!tableData.containsKey(rightTable)) {
+            loadTableIfNeeded(rightTable, tableData, tableSizes);
+        }
+
+        List<Map<String, Object>> rightRows = tableData.get(rightTable);
+        long leftSize = (current == null) ? tableSizes.get(leftTable) : current.size();
+        long rightSize = tableSizes.get(rightTable);
+
+        JoinAlgorithm strategy = joinStrategySelector.choose(leftSize, rightSize);
+        return strategy.join(leftRows, rightRows, leftKey, rightKey);
+    }
+
+    private List<Map<String, Object>> loadTableIfNeeded(
+            String fullTableName,
+            Map<String, List<Map<String, Object>>> tableData,
+            Map<String, Long> tableSizes) {
+
+        Connection conn = dataSourceFactory.getCachedByName(getSchemaName(fullTableName));
+        String tableName = getSimpleTableName(fullTableName);
+
+        List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
+        tableData.put(fullTableName, rows);
+        tableSizes.put(fullTableName, rowCountEstimator.estimateRowCount(conn, tableName).orElse((long) rows.size()));
+
+        return rows;
     }
 
     private List<Map<String, Object>> filterSelectedColumns(List<Map<String, Object>> rows, List<String> selectedColumns) {
