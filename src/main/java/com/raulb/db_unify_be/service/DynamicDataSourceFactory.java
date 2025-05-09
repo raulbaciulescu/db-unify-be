@@ -46,6 +46,10 @@ public class DynamicDataSourceFactory {
         return cached != null ? cached.dataSource() : null;
     }
 
+    public CachedDataSource getCachedDataSource(Long id) {
+        return cache.get(id);
+    }
+
     public void clearCache() {
         cache.clear();
     }

@@ -1,0 +1,839 @@
+{
+  "queryType": "SELECT",
+  "tables": [
+    "orcl19c.gdpr_consents",
+    "decathlon.decathlon_customers",
+    "marathon_db.marathon_participants",
+    "population_db.population"
+  ],
+  "selectedColumns": [
+    "*"
+  ],
+  "whereCondition": {
+    "leftExpression": {
+      "leftExpression": {
+        "leftExpression": {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "marathon_participants",
+              "fullyQualifiedName": "marathon_db.marathon_participants",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "marathon_db",
+              "dblinkName": "marathon_participants",
+              "nameParts": [
+                "marathon_participants",
+                "marathon_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "event_name",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "marathon_db.marathon_participants.event_name",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "value": "Maraton Cluj",
+            "prefix": null,
+            "notExcapedValue": "Maraton Cluj",
+            "astnode": {
+              "id": 25
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        },
+        "rightExpression": {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "population",
+              "fullyQualifiedName": "population_db.population",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "population_db",
+              "dblinkName": "population",
+              "nameParts": [
+                "population",
+                "population_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "last_name",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "population_db.population.last_name",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "value": "Popescu",
+            "prefix": null,
+            "notExcapedValue": "Popescu",
+            "astnode": {
+              "id": 25
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        },
+        "useOperator": false,
+        "stringExpression": "AND",
+        "astnode": null
+      },
+      "rightExpression": {
+        "leftExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "gdpr_consents",
+            "fullyQualifiedName": "orcl19c.gdpr_consents",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "orcl19c",
+            "dblinkName": "gdpr_consents",
+            "nameParts": [
+              "gdpr_consents",
+              "orcl19c"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "consent_given",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "orcl19c.gdpr_consents.consent_given",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "rightExpression": {
+          "stringValue": "1",
+          "value": 1,
+          "bigIntegerValue": 1,
+          "astnode": null
+        },
+        "oldOracleJoinSyntax": 0,
+        "oraclePriorPosition": 0,
+        "stringExpression": "=",
+        "astnode": {
+          "id": 19
+        }
+      },
+      "useOperator": false,
+      "stringExpression": "AND",
+      "astnode": null
+    },
+    "rightExpression": {
+      "leftExpression": {
+        "table": {
+          "alias": null,
+          "sampleClause": null,
+          "pivot": null,
+          "sqlServerHints": null,
+          "name": "population",
+          "fullyQualifiedName": "population_db.population",
+          "database": {
+            "server": null,
+            "databaseName": null,
+            "fullyQualifiedName": ""
+          },
+          "schemaName": "population_db",
+          "dblinkName": "population",
+          "nameParts": [
+            "population",
+            "population_db"
+          ],
+          "indexHint": null,
+          "unPivot": null,
+          "astnode": null
+        },
+        "columnName": "location",
+        "arrayConstructor": null,
+        "fullyQualifiedName": "population_db.population.location",
+        "astnode": {
+          "id": 4
+        }
+      },
+      "rightExpression": {
+        "value": "%Cluj%",
+        "prefix": null,
+        "notExcapedValue": "%Cluj%",
+        "astnode": {
+          "id": 25
+        }
+      },
+      "not": false,
+      "useBinary": false,
+      "likeKeyWord": "LIKE",
+      "stringExpression": "LIKE",
+      "caseInsensitive": false,
+      "escape": null,
+      "astnode": {
+        "id": 21
+      }
+    },
+    "useOperator": false,
+    "stringExpression": "AND",
+    "astnode": null
+  },
+  "groupByColumns": [],
+  "havingCondition": null,
+  "orderByColumns": null,
+  "originalSql": null,
+  "joins": [
+    {
+      "outer": false,
+      "right": false,
+      "left": false,
+      "natural": false,
+      "global": false,
+      "full": false,
+      "inner": true,
+      "simple": false,
+      "cross": false,
+      "semi": false,
+      "straight": false,
+      "apply": false,
+      "fromItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "decathlon_customers",
+        "fullyQualifiedName": "decathlon.decathlon_customers",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "decathlon",
+        "dblinkName": "decathlon_customers",
+        "nameParts": [
+          "decathlon_customers",
+          "decathlon"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "onExpressions": [
+        {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "population",
+              "fullyQualifiedName": "population_db.population",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "population_db",
+              "dblinkName": "population",
+              "nameParts": [
+                "population",
+                "population_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "population_db.population.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "decathlon_customers",
+              "fullyQualifiedName": "decathlon.decathlon_customers",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "decathlon",
+              "dblinkName": "decathlon_customers",
+              "nameParts": [
+                "decathlon_customers",
+                "decathlon"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "decathlon.decathlon_customers.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        }
+      ],
+      "usingColumns": [],
+      "joinWindow": null,
+      "onExpression": {
+        "leftExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "population",
+            "fullyQualifiedName": "population_db.population",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "population_db",
+            "dblinkName": "population",
+            "nameParts": [
+              "population",
+              "population_db"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "population_db.population.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "rightExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "decathlon_customers",
+            "fullyQualifiedName": "decathlon.decathlon_customers",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "decathlon",
+            "dblinkName": "decathlon_customers",
+            "nameParts": [
+              "decathlon_customers",
+              "decathlon"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "decathlon.decathlon_customers.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "oldOracleJoinSyntax": 0,
+        "oraclePriorPosition": 0,
+        "stringExpression": "=",
+        "astnode": {
+          "id": 19
+        }
+      },
+      "rightItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "decathlon_customers",
+        "fullyQualifiedName": "decathlon.decathlon_customers",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "decathlon",
+        "dblinkName": "decathlon_customers",
+        "nameParts": [
+          "decathlon_customers",
+          "decathlon"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "innerJoin": true,
+      "windowJoin": false,
+      "astnode": {
+        "id": 15
+      }
+    },
+    {
+      "outer": false,
+      "right": false,
+      "left": false,
+      "natural": false,
+      "global": false,
+      "full": false,
+      "inner": true,
+      "simple": false,
+      "cross": false,
+      "semi": false,
+      "straight": false,
+      "apply": false,
+      "fromItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "marathon_participants",
+        "fullyQualifiedName": "marathon_db.marathon_participants",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "marathon_db",
+        "dblinkName": "marathon_participants",
+        "nameParts": [
+          "marathon_participants",
+          "marathon_db"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "onExpressions": [
+        {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "population",
+              "fullyQualifiedName": "population_db.population",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "population_db",
+              "dblinkName": "population",
+              "nameParts": [
+                "population",
+                "population_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "population_db.population.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "marathon_participants",
+              "fullyQualifiedName": "marathon_db.marathon_participants",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "marathon_db",
+              "dblinkName": "marathon_participants",
+              "nameParts": [
+                "marathon_participants",
+                "marathon_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "marathon_db.marathon_participants.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        }
+      ],
+      "usingColumns": [],
+      "joinWindow": null,
+      "onExpression": {
+        "leftExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "population",
+            "fullyQualifiedName": "population_db.population",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "population_db",
+            "dblinkName": "population",
+            "nameParts": [
+              "population",
+              "population_db"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "population_db.population.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "rightExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "marathon_participants",
+            "fullyQualifiedName": "marathon_db.marathon_participants",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "marathon_db",
+            "dblinkName": "marathon_participants",
+            "nameParts": [
+              "marathon_participants",
+              "marathon_db"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "marathon_db.marathon_participants.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "oldOracleJoinSyntax": 0,
+        "oraclePriorPosition": 0,
+        "stringExpression": "=",
+        "astnode": {
+          "id": 19
+        }
+      },
+      "rightItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "marathon_participants",
+        "fullyQualifiedName": "marathon_db.marathon_participants",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "marathon_db",
+        "dblinkName": "marathon_participants",
+        "nameParts": [
+          "marathon_participants",
+          "marathon_db"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "innerJoin": true,
+      "windowJoin": false,
+      "astnode": {
+        "id": 15
+      }
+    },
+    {
+      "outer": false,
+      "right": false,
+      "left": false,
+      "natural": false,
+      "global": false,
+      "full": false,
+      "inner": true,
+      "simple": false,
+      "cross": false,
+      "semi": false,
+      "straight": false,
+      "apply": false,
+      "fromItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "gdpr_consents",
+        "fullyQualifiedName": "orcl19c.gdpr_consents",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "orcl19c",
+        "dblinkName": "gdpr_consents",
+        "nameParts": [
+          "gdpr_consents",
+          "orcl19c"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "onExpressions": [
+        {
+          "leftExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "population",
+              "fullyQualifiedName": "population_db.population",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "population_db",
+              "dblinkName": "population",
+              "nameParts": [
+                "population",
+                "population_db"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "population_db.population.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "rightExpression": {
+            "table": {
+              "alias": null,
+              "sampleClause": null,
+              "pivot": null,
+              "sqlServerHints": null,
+              "name": "gdpr_consents",
+              "fullyQualifiedName": "orcl19c.gdpr_consents",
+              "database": {
+                "server": null,
+                "databaseName": null,
+                "fullyQualifiedName": ""
+              },
+              "schemaName": "orcl19c",
+              "dblinkName": "gdpr_consents",
+              "nameParts": [
+                "gdpr_consents",
+                "orcl19c"
+              ],
+              "indexHint": null,
+              "unPivot": null,
+              "astnode": null
+            },
+            "columnName": "cnp",
+            "arrayConstructor": null,
+            "fullyQualifiedName": "orcl19c.gdpr_consents.cnp",
+            "astnode": {
+              "id": 4
+            }
+          },
+          "oldOracleJoinSyntax": 0,
+          "oraclePriorPosition": 0,
+          "stringExpression": "=",
+          "astnode": {
+            "id": 19
+          }
+        }
+      ],
+      "usingColumns": [],
+      "joinWindow": null,
+      "onExpression": {
+        "leftExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "population",
+            "fullyQualifiedName": "population_db.population",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "population_db",
+            "dblinkName": "population",
+            "nameParts": [
+              "population",
+              "population_db"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "population_db.population.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "rightExpression": {
+          "table": {
+            "alias": null,
+            "sampleClause": null,
+            "pivot": null,
+            "sqlServerHints": null,
+            "name": "gdpr_consents",
+            "fullyQualifiedName": "orcl19c.gdpr_consents",
+            "database": {
+              "server": null,
+              "databaseName": null,
+              "fullyQualifiedName": ""
+            },
+            "schemaName": "orcl19c",
+            "dblinkName": "gdpr_consents",
+            "nameParts": [
+              "gdpr_consents",
+              "orcl19c"
+            ],
+            "indexHint": null,
+            "unPivot": null,
+            "astnode": null
+          },
+          "columnName": "cnp",
+          "arrayConstructor": null,
+          "fullyQualifiedName": "orcl19c.gdpr_consents.cnp",
+          "astnode": {
+            "id": 4
+          }
+        },
+        "oldOracleJoinSyntax": 0,
+        "oraclePriorPosition": 0,
+        "stringExpression": "=",
+        "astnode": {
+          "id": 19
+        }
+      },
+      "rightItem": {
+        "alias": null,
+        "sampleClause": null,
+        "pivot": null,
+        "sqlServerHints": null,
+        "name": "gdpr_consents",
+        "fullyQualifiedName": "orcl19c.gdpr_consents",
+        "database": {
+          "server": null,
+          "databaseName": null,
+          "fullyQualifiedName": ""
+        },
+        "schemaName": "orcl19c",
+        "dblinkName": "gdpr_consents",
+        "nameParts": [
+          "gdpr_consents",
+          "orcl19c"
+        ],
+        "indexHint": null,
+        "unPivot": null,
+        "astnode": {
+          "id": 5
+        }
+      },
+      "innerJoin": true,
+      "windowJoin": false,
+      "astnode": {
+        "id": 15
+      }
+    }
+  ]
+}

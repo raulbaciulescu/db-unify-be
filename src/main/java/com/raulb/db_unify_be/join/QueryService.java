@@ -3,17 +3,14 @@ package com.raulb.db_unify_be.join;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
-import com.raulb.db_unify_be.repository.ConnectionRepository;
 import com.raulb.db_unify_be.service.DynamicDataSourceFactory;
 import com.raulb.db_unify_be.service.SelectService;
 import com.raulb.db_unify_be.service.SqlParsingService;
 import lombok.RequiredArgsConstructor;
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,15 +21,20 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class QueryService {
+
     private final SqlParsingService sqlParsingService;
     private final RowCountEstimator rowCountEstimator;
     private final JoinStrategySelector joinStrategySelector;
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
-
+    //private final QueryValidator queryValidator;
 
     public List<Map<String, Object>> execute(String sql) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
+
+//        if (!queryValidator.isValid(parsedQuery)) {
+//            throw new IllegalArgumentException("Query failed validation: check table names and join compatibility.");
+//        }
 
         if (parsedQuery.getJoins().isEmpty()) {
             return executeSingleTableSelect(parsedQuery);
@@ -44,82 +46,69 @@ public class QueryService {
     private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery) {
         List<String> mainList = new ArrayList<>(parsedQuery.getTables());
         String fullTableName = mainList.get(0);
-
-        Connection conn = dataSourceFactory.getCachedByName(getSchemaName(fullTableName));
         String tableName = getSimpleTableName(fullTableName);
+        String schema = getSchemaName(fullTableName);
+        Connection conn = dataSourceFactory.getCachedByName(schema);
 
+      //  List<Map<String, Object>> rows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereExpression());
         List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 
     private List<Map<String, Object>> executeJoinQuery(ParsedQuery parsedQuery) {
-        Map<String, List<Map<String, Object>>> tableData = new HashMap<>();
-        Map<String, Long> tableSizes = new HashMap<>();
-        List<Map<String, Object>> current = null;
+        List<Map<String, Object>> currentResult = null;
 
-        for (Join join : parsedQuery.getJoins()) {
-            current = performJoin(join, current, tableData, tableSizes);
+        Map<String, Long> tableEstimates = new HashMap<>();
+        for (String table : parsedQuery.getTables()) {
+            Connection conn = dataSourceFactory.getCachedByName(getSchemaName(table));
+            String simpleTable = getSimpleTableName(table);
+            long estimated = rowCountEstimator.estimateRowCount(conn, simpleTable).orElse(1_000_000L);
+            tableEstimates.put(table, estimated);
         }
 
-        return filterSelectedColumns(current, parsedQuery.getSelectedColumns());
+        for (Join join : parsedQuery.getJoins()) {
+            currentResult = performJoin(join, currentResult, parsedQuery, tableEstimates);
+        }
+
+        return filterSelectedColumns(currentResult, parsedQuery.getSelectedColumns());
     }
 
     private List<Map<String, Object>> performJoin(
             Join join,
-            List<Map<String, Object>> current,
-            Map<String, List<Map<String, Object>>> tableData,
-            Map<String, Long> tableSizes) {
+            List<Map<String, Object>> currentResult,
+            ParsedQuery parsedQuery,
+            Map<String, Long> estimates) {
 
-        Expression expression = join.getOnExpression();
-        if (!(expression instanceof EqualsTo)) return current;
-
-        EqualsTo equalsTo = (EqualsTo) expression;
-        Column leftCol = (Column) equalsTo.getLeftExpression();
-        Column rightCol = (Column) equalsTo.getRightExpression();
+        EqualsTo eq = (EqualsTo) join.getOnExpression();
+        Column leftCol = (Column) eq.getLeftExpression();
+        Column rightCol = (Column) eq.getRightExpression();
 
         String leftTable = getFullTableName(leftCol.getTable());
         String rightTable = getFullTableName(rightCol.getTable());
         String leftKey = leftCol.getColumnName();
         String rightKey = rightCol.getColumnName();
 
-        List<Map<String, Object>> leftRows = current;
-        if (!tableData.containsKey(leftTable)) {
-            leftRows = loadTableIfNeeded(leftTable, tableData, tableSizes);
-            if (current == null) current = leftRows;
-        } else if (current == null) {
-            leftRows = tableData.get(leftTable);
+        List<Map<String, Object>> leftRows = currentResult;
+        if (leftRows == null) {
+            Connection conn = dataSourceFactory.getCachedByName(getSchemaName(leftTable));
+            String tableName = getSimpleTableName(leftTable);
+            leftRows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
         }
 
-        if (!tableData.containsKey(rightTable)) {
-            loadTableIfNeeded(rightTable, tableData, tableSizes);
-        }
+        Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
+        String rightTableName = getSimpleTableName(rightTable);
+        List<Map<String, Object>> rightRows = selectService.selectFromTableWithWhere(rightConn.getId(), rightTableName, parsedQuery.getWhereCondition());
 
-        List<Map<String, Object>> rightRows = tableData.get(rightTable);
-        long leftSize = (current == null) ? tableSizes.get(leftTable) : current.size();
-        long rightSize = tableSizes.get(rightTable);
+        long leftSize = leftRows.size(); // already loaded
+        long rightSize = estimates.get(rightTable);
 
-        JoinAlgorithm strategy = joinStrategySelector.choose(leftSize, rightSize);
-        return strategy.join(leftRows, rightRows, leftKey, rightKey);
-    }
-
-    private List<Map<String, Object>> loadTableIfNeeded(
-            String fullTableName,
-            Map<String, List<Map<String, Object>>> tableData,
-            Map<String, Long> tableSizes) {
-
-        Connection conn = dataSourceFactory.getCachedByName(getSchemaName(fullTableName));
-        String tableName = getSimpleTableName(fullTableName);
-
-        List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
-        tableData.put(fullTableName, rows);
-        tableSizes.put(fullTableName, rowCountEstimator.estimateRowCount(conn, tableName).orElse((long) rows.size()));
-
-        return rows;
+        JoinAlgorithm algorithm = joinStrategySelector.choose(leftSize, rightSize);
+        return algorithm.join(leftRows, rightRows, leftKey, rightKey);
     }
 
     private List<Map<String, Object>> filterSelectedColumns(List<Map<String, Object>> rows, List<String> selectedColumns) {
         if (selectedColumns == null || selectedColumns.isEmpty() || (selectedColumns.size() == 1 && selectedColumns.get(0).equals("*"))) {
-            return rows; // SELECT *: return everything
+            return rows;
         }
 
         return rows.stream()
@@ -129,7 +118,6 @@ public class QueryService {
                         if (row.containsKey(col)) {
                             filtered.put(col, row.get(col));
                         } else {
-                            // Try last part in case it's a fully qualified name but row uses simple name
                             String[] parts = col.split("\\.");
                             String shortCol = parts[parts.length - 1];
                             if (row.containsKey(shortCol)) {
@@ -143,14 +131,14 @@ public class QueryService {
     }
 
     private String getFullTableName(Table table) {
-        String schema = table.getSchemaName(); // e.g., "population_db"
-        String name = table.getName();         // e.g., "population"
+        String schema = table.getSchemaName();
+        String name = table.getName();
         return (schema != null && !schema.isBlank()) ? schema + "." + name : name;
     }
 
     private String getSchemaName(String fullTableName) {
-        int dotIndex = fullTableName.indexOf('.');
-        return dotIndex > 0 ? fullTableName.substring(0, dotIndex) : fullTableName;
+        int dot = fullTableName.indexOf('.');
+        return dot > 0 ? fullTableName.substring(0, dot) : fullTableName;
     }
 
     private String getSimpleTableName(String fullTableName) {
