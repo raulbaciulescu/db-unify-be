@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,25 @@ public class QueryService {
     public List<Map<String, Object>> execute(String sql) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
 
+        if (parsedQuery.getJoins().isEmpty()) {
+            return executeSingleTableSelect(parsedQuery);
+        } else {
+            return executeJoinQuery(parsedQuery);
+        }
+    }
+
+    private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery) {
+        List<String> mainList = new ArrayList<>(parsedQuery.getTables());
+        String fullTableName = mainList.get(0);
+
+        Connection conn = dataSourceFactory.getCachedByName(getSchemaName(fullTableName));
+        String tableName = getSimpleTableName(fullTableName);
+
+        List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
+        return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
+    }
+
+    private List<Map<String, Object>> executeJoinQuery(ParsedQuery parsedQuery) {
         Map<String, List<Map<String, Object>>> tableData = new HashMap<>();
         Map<String, Long> tableSizes = new HashMap<>();
         List<Map<String, Object>> current = null;
