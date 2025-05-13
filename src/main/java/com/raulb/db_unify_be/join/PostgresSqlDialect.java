@@ -1,0 +1,7 @@
+package com.raulb.db_unify_be.join;
+
+public class PostgresSqlDialect implements SqlDialect {
+    public String applyPagination(String baseQuery, int limit, int offset) {
+        return baseQuery + String.format(" LIMIT %d OFFSET %d", limit, offset);
+    }
+}

@@ -1,6 +1,9 @@
 package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.entity.CachedDataSource;
+import com.raulb.db_unify_be.entity.DatabaseType;
+import com.raulb.db_unify_be.join.SqlDialect;
+import com.raulb.db_unify_be.join.SqlDialectFactory;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -19,6 +22,17 @@ import java.util.StringJoiner;
 @RequiredArgsConstructor
 public class SelectService {
     private final DynamicDataSourceFactory dataSourceFactory;
+
+    public List<Map<String, Object>> selectChunkFromTable(Long connectionId, String tableName, int limit, int offset) {
+        CachedDataSource cached = validateAndGetDataSource(connectionId);
+        DatabaseType dbType = cached.connection().getDatabaseType();
+        SqlDialect dialect = SqlDialectFactory.getDialect(dbType);
+
+        String baseQuery = "SELECT * FROM " + tableName;
+        String paginatedQuery = dialect.applyPagination(baseQuery, limit, offset);
+
+        return new JdbcTemplate(cached.dataSource()).queryForList(paginatedQuery);
+    }
 
     public List<Map<String, Object>> selectAllFromTable(Long connectionId, String tableName) {
         DataSource dataSource = dataSourceFactory.getCached(connectionId);

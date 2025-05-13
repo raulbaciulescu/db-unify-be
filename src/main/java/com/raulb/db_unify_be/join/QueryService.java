@@ -21,20 +21,14 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class QueryService {
-
     private final SqlParsingService sqlParsingService;
     private final RowCountEstimator rowCountEstimator;
     private final JoinStrategySelector joinStrategySelector;
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
-    //private final QueryValidator queryValidator;
 
     public List<Map<String, Object>> execute(String sql) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
-
-//        if (!queryValidator.isValid(parsedQuery)) {
-//            throw new IllegalArgumentException("Query failed validation: check table names and join compatibility.");
-//        }
 
         if (parsedQuery.getJoins().isEmpty()) {
             return executeSingleTableSelect(parsedQuery);
@@ -50,8 +44,8 @@ public class QueryService {
         String schema = getSchemaName(fullTableName);
         Connection conn = dataSourceFactory.getCachedByName(schema);
 
-      //  List<Map<String, Object>> rows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereExpression());
-        List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
+        //List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
+        List<Map<String, Object>> rows = selectService.selectChunkFromTable(conn.getId(), tableName, 3200, 2900);
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 
