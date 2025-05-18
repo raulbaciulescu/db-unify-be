@@ -1,5 +1,6 @@
 package com.raulb.db_unify_be.join;
 
+import com.raulb.db_unify_be.dtos.QueryResult;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
@@ -27,25 +28,38 @@ public class QueryService {
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
 
-    public List<Map<String, Object>> execute(String sql) {
+    private static final int DEFAULT_LIMIT = 10_000;
+
+    public QueryResult execute(String sql, int offset) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
 
         if (parsedQuery.getJoins().isEmpty()) {
-            return executeSingleTableSelect(parsedQuery);
+            var rows = executeSingleTableSelect(parsedQuery, offset);
+            if (rows.size() == 0)
+                return new QueryResult(rows, offset, true);
+            else
+                return new QueryResult(rows, offset + DEFAULT_LIMIT, false);
         } else {
-            return executeJoinQuery(parsedQuery);
+//            return executeJoinQuery(parsedQuery);
+            return null;
         }
     }
 
-    private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery) {
+    private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery, int offset) {
         List<String> mainList = new ArrayList<>(parsedQuery.getTables());
         String fullTableName = mainList.get(0);
         String tableName = getSimpleTableName(fullTableName);
         String schema = getSchemaName(fullTableName);
         Connection conn = dataSourceFactory.getCachedByName(schema);
+        long estimatedRows = rowCountEstimator.estimateRowCount(conn, tableName).orElse(1_000_000L);
+        List<Map<String, Object>> rows;
 
-        //List<Map<String, Object>> rows = selectService.selectAllFromTable(conn.getId(), tableName);
-        List<Map<String, Object>> rows = selectService.selectChunkFromTable(conn.getId(), tableName, 3200, 2900);
+        if (estimatedRows > DEFAULT_LIMIT) {
+            rows = selectService.selectChunkFromTable(conn.getId(), tableName, DEFAULT_LIMIT, offset);
+        } else {
+            rows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+        }
+
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 

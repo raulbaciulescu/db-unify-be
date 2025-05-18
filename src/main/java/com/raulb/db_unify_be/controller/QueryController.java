@@ -2,6 +2,7 @@ package com.raulb.db_unify_be.controller;
 
 
 import com.raulb.db_unify_be.dtos.QueryRequest;
+import com.raulb.db_unify_be.dtos.QueryResult;
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.join.QueryService;
 import com.raulb.db_unify_be.service.SqlParsingService;
@@ -33,7 +34,7 @@ public class QueryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Map<String, Object>> execute(@RequestBody QueryRequest request){
-        return queryService.execute(request.query());
+    public QueryResult execute(@RequestBody QueryRequest request){
+        return queryService.execute(request.query(), request.offset());
     }
 }
