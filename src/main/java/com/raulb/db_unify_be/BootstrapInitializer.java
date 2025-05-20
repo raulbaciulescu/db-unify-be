@@ -20,7 +20,8 @@ public class BootstrapInitializer implements ApplicationRunner {
 
     private final ConnectionService service;
     private static final Random random = new Random();
-    private static final int TOTAL_RECORDS = 1000;
+    private static final int TOTAL_RECORDS = 100_000;
+    private static final int TOTAL_PERSONS = 300;
     private static final int COMMON_CNP_COUNT = 300;
     private List<String> commonCnps;
 
@@ -55,7 +56,7 @@ public class BootstrapInitializer implements ApplicationRunner {
             String sql = "INSERT INTO population (cnp, first_name, last_name, location) VALUES (?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 Set<String> used = new HashSet<>();
-                for (int i = 0; i < TOTAL_RECORDS; i++) {
+                for (int i = 0; i < TOTAL_PERSONS; i++) {
                     String cnp = (i < COMMON_CNP_COUNT) ? commonCnps.get(i) : generateRandomCnp(used);
                     pstmt.setString(1, cnp);
                     pstmt.setString(2, randomFirstName());

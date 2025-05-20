@@ -25,7 +25,7 @@ public class QueryService {
     private final SelectService selectService;
     private final DynamicDataSourceFactory dataSourceFactory;
 
-    private static final int DEFAULT_LIMIT = 1_000;
+    private static final int DEFAULT_LIMIT = 50_000;
 
     public QueryResult execute(String sql, int offset) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
@@ -36,14 +36,14 @@ public class QueryService {
             boolean isDone = rows.size() < DEFAULT_LIMIT;
             return new QueryResult(rows, offset + DEFAULT_LIMIT, isDone);
         } else {
-            JoinResult result = executeJoinQuery(parsedQuery, offset);
-            return new QueryResult(result.rows(), result.nextOffset(), result.isDone());
+            ResultMeta meta = new ResultMeta();
+            List<Map<String, Object>> result = executeJoinQuery(parsedQuery, offset, meta);
+            return new QueryResult(result, meta.nextOffset, meta.isDone);
         }
     }
 
     private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery, int offset) {
-        List<String> mainList = new ArrayList<>(parsedQuery.getTables());
-        String fullTableName = mainList.get(0);
+        String fullTableName = parsedQuery.getTables().iterator().next();
         String tableName = getSimpleTableName(fullTableName);
         String schema = getSchemaName(fullTableName);
         Connection conn = dataSourceFactory.getCachedByName(schema);
@@ -59,8 +59,9 @@ public class QueryService {
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 
-    private JoinResult executeJoinQuery(ParsedQuery parsedQuery, int offset) {
-        // Estimate row counts for all tables involved in the query
+    private List<Map<String, Object>> executeJoinQuery(ParsedQuery parsedQuery, int offset, ResultMeta meta) {
+        List<Map<String, Object>> currentResult = null;
+
         Map<String, Long> tableEstimates = new HashMap<>();
         for (String table : parsedQuery.getTables()) {
             Connection conn = dataSourceFactory.getCachedByName(getSchemaName(table));
@@ -69,42 +70,64 @@ public class QueryService {
             tableEstimates.put(table, estimated);
         }
 
-        // get base table (first in FROM clause)
-        String baseTable = parsedQuery.getTables().iterator().next();
-        Connection baseConn = dataSourceFactory.getCachedByName(getSchemaName(baseTable));
-        String baseTableName = getSimpleTableName(baseTable);
-        long baseEstimate = tableEstimates.get(baseTable);
-
-        List<Map<String, Object>> baseRows = (baseEstimate > DEFAULT_LIMIT)
-                ? selectService.selectChunkFromTable(baseConn.getId(), baseTableName, DEFAULT_LIMIT, offset)
-                : selectService.selectFromTableWithWhere(baseConn.getId(), baseTableName, parsedQuery.getWhereCondition());
-
-        boolean isDone = baseRows.size() < DEFAULT_LIMIT;
-        List<Map<String, Object>> result = baseRows;
-
+        boolean isFirstJoin = true;
         for (Join join : parsedQuery.getJoins()) {
-            EqualsTo eq = (EqualsTo) join.getOnExpression();
-            Column leftCol = (Column) eq.getLeftExpression();
-            Column rightCol = (Column) eq.getRightExpression();
-
-            String rightTable = getFullTableName(rightCol.getTable());
-            String rightKey = rightCol.getColumnName();
-            String leftKey = leftCol.getColumnName();
-
-            Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
-            String rightTableName = getSimpleTableName(rightTable);
-            long estimatedRightSize = tableEstimates.getOrDefault(rightTable, 1_000_000L);
-
-            JoinAlgorithm algorithm = joinStrategySelector.choose(result.size(), estimatedRightSize);
-
-            List<Map<String, Object>> rightRows = selectService.selectFromTableWithWhere(
-                    rightConn.getId(), rightTableName, parsedQuery.getWhereCondition());
-
-            result = algorithm.join(result, rightRows, leftKey, rightKey);
+            currentResult = performJoin(join, currentResult, parsedQuery, tableEstimates, offset, meta, isFirstJoin);
+            if (!meta.isDone) {
+                // stop here and wait for next chunk
+                break;
+            }
+            isFirstJoin = false;
         }
 
-        int nextOffset = offset + DEFAULT_LIMIT;
-        return new JoinResult(filterSelectedColumns(result, parsedQuery.getSelectedColumns()), nextOffset, isDone);
+        return filterSelectedColumns(currentResult, parsedQuery.getSelectedColumns());
+    }
+
+    private List<Map<String, Object>> performJoin(
+            Join join,
+            List<Map<String, Object>> currentResult,
+            ParsedQuery parsedQuery,
+            Map<String, Long> estimates,
+            int offset,
+            ResultMeta meta,
+            boolean paginateRight) {
+
+        EqualsTo eq = (EqualsTo) join.getOnExpression();
+        Column leftCol = (Column) eq.getLeftExpression();
+        Column rightCol = (Column) eq.getRightExpression();
+
+        String leftTable = getFullTableName(leftCol.getTable());
+        String rightTable = getFullTableName(rightCol.getTable());
+        String leftKey = leftCol.getColumnName();
+        String rightKey = rightCol.getColumnName();
+
+        List<Map<String, Object>> leftRows = currentResult;
+        if (leftRows == null) {
+            Connection conn = dataSourceFactory.getCachedByName(getSchemaName(leftTable));
+            String tableName = getSimpleTableName(leftTable);
+            leftRows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+        }
+
+        Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
+        String rightTableName = getSimpleTableName(rightTable);
+        long estimatedRightSize = estimates.getOrDefault(rightTable, 1_000_000L);
+
+        JoinAlgorithm algorithm = joinStrategySelector.choose(leftRows.size(), estimatedRightSize);
+
+        List<Map<String, Object>> rightChunk;
+        if (paginateRight && estimatedRightSize > DEFAULT_LIMIT) {
+            rightChunk = selectService.selectChunkFromTable(
+                    rightConn.getId(), rightTableName, DEFAULT_LIMIT, offset);
+            meta.nextOffset = offset + DEFAULT_LIMIT;
+            meta.isDone = rightChunk.size() < DEFAULT_LIMIT;
+        } else {
+            rightChunk = selectService.selectFromTableWithWhere(
+                    rightConn.getId(), rightTableName, parsedQuery.getWhereCondition());
+            meta.nextOffset = offset;
+            meta.isDone = true;
+        }
+
+        return algorithm.join(leftRows, rightChunk, leftKey, rightKey);
     }
 
     private List<Map<String, Object>> filterSelectedColumns(List<Map<String, Object>> rows, List<String> selectedColumns) {
@@ -147,5 +170,8 @@ public class QueryService {
         return dotIndex > 0 ? fullTableName.substring(dotIndex + 1) : fullTableName;
     }
 
-    private record JoinResult(List<Map<String, Object>> rows, int nextOffset, boolean isDone) {}
+    private static class ResultMeta {
+        int nextOffset;
+        boolean isDone;
+    }
 }
