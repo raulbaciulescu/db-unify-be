@@ -1,4 +1,4 @@
-package com.raulb.db_unify_be.join;
+package com.raulb.db_unify_be.join.algorithms;
 
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
 

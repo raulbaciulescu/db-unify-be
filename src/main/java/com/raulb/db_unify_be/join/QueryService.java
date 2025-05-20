@@ -5,7 +5,8 @@ import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
 import com.raulb.db_unify_be.service.DynamicDataSourceFactory;
-import com.raulb.db_unify_be.service.SelectService;
+import com.raulb.db_unify_be.service.DataFetcher;
+import com.raulb.db_unify_be.service.RowCountEstimator;
 import com.raulb.db_unify_be.service.SqlParsingService;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -22,7 +23,7 @@ public class QueryService {
     private final SqlParsingService sqlParsingService;
     private final RowCountEstimator rowCountEstimator;
     private final JoinStrategySelector joinStrategySelector;
-    private final SelectService selectService;
+    private final DataFetcher dataFetcher;
     private final DynamicDataSourceFactory dataSourceFactory;
 
     private static final int DEFAULT_LIMIT = 50_000;
@@ -51,9 +52,9 @@ public class QueryService {
         List<Map<String, Object>> rows;
 
         if (estimatedRows > DEFAULT_LIMIT) {
-            rows = selectService.selectChunkFromTable(conn.getId(), tableName, DEFAULT_LIMIT, offset);
+            rows = dataFetcher.selectChunkFromTable(conn.getId(), tableName, DEFAULT_LIMIT, offset);
         } else {
-            rows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+            rows = dataFetcher.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
         }
 
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
@@ -105,7 +106,7 @@ public class QueryService {
         if (leftRows == null) {
             Connection conn = dataSourceFactory.getCachedByName(getSchemaName(leftTable));
             String tableName = getSimpleTableName(leftTable);
-            leftRows = selectService.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+            leftRows = dataFetcher.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
         }
 
         Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
@@ -116,12 +117,12 @@ public class QueryService {
 
         List<Map<String, Object>> rightChunk;
         if (paginateRight && estimatedRightSize > DEFAULT_LIMIT) {
-            rightChunk = selectService.selectChunkFromTable(
+            rightChunk = dataFetcher.selectChunkFromTable(
                     rightConn.getId(), rightTableName, DEFAULT_LIMIT, offset);
             meta.nextOffset = offset + DEFAULT_LIMIT;
             meta.isDone = rightChunk.size() < DEFAULT_LIMIT;
         } else {
-            rightChunk = selectService.selectFromTableWithWhere(
+            rightChunk = dataFetcher.selectFromTableWithWhere(
                     rightConn.getId(), rightTableName, parsedQuery.getWhereCondition());
             meta.nextOffset = offset;
             meta.isDone = true;

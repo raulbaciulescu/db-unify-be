@@ -1,5 +1,7 @@
 package com.raulb.db_unify_be.join;
 
+import com.raulb.db_unify_be.join.algorithms.HashJoinAlgorithm;
+import com.raulb.db_unify_be.join.algorithms.SortMergeJoinAlgorithm;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
 import org.springframework.stereotype.Component;
 

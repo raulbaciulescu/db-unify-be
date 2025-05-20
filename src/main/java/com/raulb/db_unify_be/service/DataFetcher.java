@@ -2,7 +2,7 @@ package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.entity.CachedDataSource;
 import com.raulb.db_unify_be.entity.DatabaseType;
-import com.raulb.db_unify_be.join.SqlDialect;
+import com.raulb.db_unify_be.join.api.SqlDialect;
 import com.raulb.db_unify_be.join.SqlDialectFactory;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.expression.Expression;
@@ -20,7 +20,7 @@ import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
-public class SelectService {
+public class DataFetcher {
     private final DynamicDataSourceFactory dataSourceFactory;
 
     public List<Map<String, Object>> selectChunkFromTable(Long connectionId, String tableName, int limit, int offset) {

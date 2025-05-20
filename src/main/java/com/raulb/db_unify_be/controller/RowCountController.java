@@ -2,7 +2,7 @@ package com.raulb.db_unify_be.controller;
 
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.repository.ConnectionRepository;
-import com.raulb.db_unify_be.join.RowCountEstimator;
+import com.raulb.db_unify_be.service.RowCountEstimator;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;

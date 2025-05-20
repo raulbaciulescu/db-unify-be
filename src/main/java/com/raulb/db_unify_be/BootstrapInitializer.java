@@ -6,6 +6,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,15 +21,15 @@ public class BootstrapInitializer implements ApplicationRunner {
 
     private final ConnectionService service;
     private static final Random random = new Random();
-    private static final int TOTAL_RECORDS = 100_000;
-    private static final int TOTAL_PERSONS = 300;
+    private static final int TOTAL_RECORDS = 500_000;
+    private static final int TOTAL_PERSONS = 500_000;
     private static final int COMMON_CNP_COUNT = 300;
     private List<String> commonCnps;
 
     @Override
     public void run(ApplicationArguments args) {
-        service.initializeAllConnections();
-//
+//        service.initializeAllConnections();
+//        clearAllTables();
 //        generateCommonCnps();
 //        populatePopulation();
 //        populateDecathlonCustomers();
@@ -90,21 +91,54 @@ public class BootstrapInitializer implements ApplicationRunner {
             String sql = "INSERT INTO decathlon_customers (email, cnp) VALUES (?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 for (int i = 0; i < TOTAL_RECORDS; i++) {
+                    String email = generateRandomEmail();
                     String cnp = (i < COMMON_CNP_COUNT) ? commonCnps.get(i) : generateRandomCnp();
-                    pstmt.setString(1, generateRandomEmail());
+                    pstmt.setString(1, email);
                     pstmt.setString(2, cnp);
 
                     pstmt.addBatch();
 
                     if (i % 100 == 0) {
-                        pstmt.executeBatch();
-                        conn.commit();
+                        try {
+                            pstmt.executeBatch();
+                            conn.commit();
+                        } catch (BatchUpdateException e) {
+                            System.err.println("Batch insert failed at record " + i + ": " + e.getMessage());
+                            conn.rollback();
+                            // Retry individual inserts in the batch
+                            handleDuplicatesIndividually(pstmt, sql, conn, i - 99, i);
+                        }
                     }
                 }
-                pstmt.executeBatch();
-                conn.commit();
+                try {
+                    pstmt.executeBatch();
+                    conn.commit();
+                } catch (BatchUpdateException e) {
+                    System.err.println("Final batch insert failed: " + e.getMessage());
+                    conn.rollback();
+                }
             }
             System.out.println("Decathlon customers table populated.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleDuplicatesIndividually(PreparedStatement batchStmt, String sql, Connection conn, int start, int end) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (int i = start; i <= end; i++) {
+                try {
+                    String email = generateRandomEmail();  // generate again to avoid duplicates
+                    String cnp = (i < COMMON_CNP_COUNT) ? commonCnps.get(i) : generateRandomCnp();
+                    pstmt.setString(1, email);
+                    pstmt.setString(2, cnp);
+                    pstmt.executeUpdate();
+                } catch (SQLException ex) {
+                    // Log and ignore duplicates
+                    System.err.println("Skipping duplicate at index " + i + ": " + ex.getMessage());
+                }
+            }
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -204,5 +238,36 @@ public class BootstrapInitializer implements ApplicationRunner {
 
     private static String generateRandomEmail() {
         return UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+    }
+
+    private void clearAllTables() {
+        clearTable("jdbc:sqlserver://localhost:1433;databaseName=population_db;integratedSecurity=true;trustServerCertificate=true",
+                null, null, "DELETE FROM population");
+
+        clearTable("jdbc:postgresql://localhost:5432/decathlon",
+                "postgres", "postgres", "DELETE FROM decathlon_customers");
+
+        clearTable("jdbc:mysql://localhost:3306/marathon_db",
+                "root", "266259", "DELETE FROM marathon_participants");
+
+        clearTable("jdbc:oracle:thin:@193.231.20.20:15211:orcl19c",
+                "brmbd1r02", "brmbd1r02", "DELETE FROM gdpr_consents");
+
+        System.out.println("All tables cleared.");
+    }
+
+    private void clearTable(String jdbcUrl, String user, String password, String deleteSql) {
+        try (Connection conn = (user == null)
+                ? DriverManager.getConnection(jdbcUrl)
+                : DriverManager.getConnection(jdbcUrl, user, password);
+             PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
+
+            stmt.executeUpdate();
+            System.out.println("Cleared table with SQL: " + deleteSql);
+
+        } catch (SQLException e) {
+            System.err.println("Failed to clear table: " + deleteSql);
+            e.printStackTrace();
+        }
     }
 }

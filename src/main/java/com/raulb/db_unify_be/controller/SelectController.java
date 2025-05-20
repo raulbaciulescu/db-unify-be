@@ -1,6 +1,6 @@
 package com.raulb.db_unify_be.controller;
 
-import com.raulb.db_unify_be.service.SelectService;
+import com.raulb.db_unify_be.service.DataFetcher;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,10 +10,10 @@ import java.util.Map;
 @RequestMapping("/select")
 public class SelectController {
 
-    private final SelectService selectService;
+    private final DataFetcher dataFetcher;
 
-    public SelectController(SelectService selectService) {
-        this.selectService = selectService;
+    public SelectController(DataFetcher dataFetcher) {
+        this.dataFetcher = dataFetcher;
     }
 
     @GetMapping("/{connectionId}/{tableName}")
@@ -21,6 +21,6 @@ public class SelectController {
             @PathVariable Long connectionId,
             @PathVariable String tableName
     ) {
-        return selectService.selectAllFromTable(connectionId, tableName);
+        return dataFetcher.selectAllFromTable(connectionId, tableName);
     }
 }
