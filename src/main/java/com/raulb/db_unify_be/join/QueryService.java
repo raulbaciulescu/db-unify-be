@@ -38,7 +38,7 @@ public class QueryService {
         } else {
             ResultMeta meta = new ResultMeta();
             List<Map<String, Object>> result = executeJoinQuery(parsedQuery, offset, meta);
-            return new QueryResult(result, meta.nextOffset, meta.isDone);
+            return new QueryResult(result, meta.nextOffset, true);
         }
     }
 
@@ -70,13 +70,13 @@ public class QueryService {
             tableEstimates.put(table, estimated);
         }
 
-        boolean isFirstJoin = true;
+        boolean isFirstJoin = false;
         for (Join join : parsedQuery.getJoins()) {
             currentResult = performJoin(join, currentResult, parsedQuery, tableEstimates, offset, meta, isFirstJoin);
-            if (!meta.isDone) {
-                // stop here and wait for next chunk
-                break;
-            }
+//            if (!meta.isDone) {
+//                // stop here and wait for next chunk
+//                break;
+//            }
             isFirstJoin = false;
         }
 
