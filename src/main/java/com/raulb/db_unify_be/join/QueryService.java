@@ -41,6 +41,21 @@ public class QueryService {
         }
     }
 
+    private List<Join> reorderJoinsByEstimate(List<Join> joins, Map<String, Long> estimates) {
+        return joins.stream()
+                .sorted(Comparator.comparingLong(j -> {
+                    EqualsTo eq = (EqualsTo) j.getOnExpression();
+                    Column left = (Column) eq.getLeftExpression();
+                    Column right = (Column) eq.getRightExpression();
+                    String leftTable = getFullTableName(left.getTable());
+                    String rightTable = getFullTableName(right.getTable());
+                    long leftSize = estimates.getOrDefault(leftTable, 1_000_000L);
+                    long rightSize = estimates.getOrDefault(rightTable, 1_000_000L);
+                    return leftSize + rightSize;
+                }))
+                .toList();
+    }
+
     private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery) {
         String fullTableName = parsedQuery.getTables().iterator().next();
         String tableName = getSimpleTableName(fullTableName);
@@ -63,7 +78,11 @@ public class QueryService {
             tableEstimates.put(table, estimated);
         }
 
-        for (Join join : parsedQuery.getJoins()) {
+        // 🧠 Sortează join-urile în ordine crescătoare după dimensiuni implicite
+        List<Join> optimizedJoins = reorderJoinsByEstimate(parsedQuery.getJoins(), tableEstimates);
+
+        for (Join join : optimizedJoins) {
+            System.out.println("Processing join: " + join);
             currentResult = performJoin(join, currentResult, parsedQuery, tableEstimates);
         }
 
