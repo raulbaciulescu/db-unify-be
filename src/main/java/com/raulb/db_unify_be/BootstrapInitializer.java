@@ -20,7 +20,7 @@ public class BootstrapInitializer implements ApplicationRunner {
 
     private final ConnectionService service;
     private static final Random random = new Random();
-    private static final int TOTAL_RECORDS = 100_000;
+    private static final int TOTAL_RECORDS = 1000;
     private static final int TOTAL_PERSONS = 300;
     private static final int COMMON_CNP_COUNT = 300;
     private List<String> commonCnps;
@@ -28,12 +28,41 @@ public class BootstrapInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         service.initializeAllConnections();
-//
+
+//        clearAllTables(); // <---- aici
 //        generateCommonCnps();
 //        populatePopulation();
 //        populateDecathlonCustomers();
 //        populateMarathonParticipants();
 //        populateGdprConsents();
+    }
+
+    private void clearAllTables() {
+        truncateTable("jdbc:sqlserver://localhost:1433;databaseName=population_db;integratedSecurity=true;trustServerCertificate=true",
+                null, null, "population");
+
+        truncateTable("jdbc:postgresql://localhost:5432/decathlon",
+                "postgres", "postgres", "decathlon_customers");
+
+        truncateTable("jdbc:mysql://localhost:3306/marathon_db",
+                "root", "266259", "marathon_participants");
+
+        truncateTable("jdbc:oracle:thin:@193.231.20.20:15211:orcl19c",
+                "brmbd1r02", "brmbd1r02", "gdpr_consents");
+    }
+
+    private void truncateTable(String jdbcUrl, String user, String password, String table) {
+        try (Connection conn = (user == null)
+                ? DriverManager.getConnection(jdbcUrl)
+                : DriverManager.getConnection(jdbcUrl, user, password);
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM " + table)) {
+
+            pstmt.executeUpdate();
+            //conn.commit();
+            System.out.println("Table '" + table + "' cleared.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void generateCommonCnps() {
