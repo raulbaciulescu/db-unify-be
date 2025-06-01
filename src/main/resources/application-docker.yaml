@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: db-unify-be
+  datasource:
+    url: jdbc:postgresql://pg-flexible-server-db-unify.postgres.database.azure.com:5432/db-unify-boostrap-db
+    username: pgadmin
+    password: password123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update

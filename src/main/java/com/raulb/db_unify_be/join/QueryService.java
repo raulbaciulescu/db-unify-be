@@ -25,7 +25,7 @@ public class QueryService {
     private final DataFetcher dataFetcher;
     private final DynamicDataSourceFactory dataSourceFactory;
 
-    private static final int DEFAULT_LIMIT = 50_000;
+    private static final int DEFAULT_LIMIT = 5_000_000;
 
     public QueryResult execute(String sql, int offset) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
@@ -108,7 +108,9 @@ public class QueryService {
         if (leftRows == null) {
             Connection conn = dataSourceFactory.getCachedByName(getSchemaName(leftTable));
             String tableName = getSimpleTableName(leftTable);
+            long start = System.currentTimeMillis();
             leftRows = dataFetcher.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+            System.out.println("Fetched left in " + (System.currentTimeMillis() - start) + "ms");
         }
 
         Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
@@ -121,10 +123,10 @@ public class QueryService {
         boolean done = false;
 
         while (!done) {
+            long start = System.currentTimeMillis();
             List<Map<String, Object>> rightChunk = dataFetcher.selectChunkFromTableWithWhere(
                     rightConn.getId(), rightTableName, parsedQuery.getWhereCondition(), DEFAULT_LIMIT, pageOffset);
-//            List<Map<String, Object>> rightChunk = dataFetcher.selectFromTableWithWhere(
-//                    rightConn.getId(), rightTableName, parsedQuery.getWhereCondition());
+            System.out.println("Fetched right in " + (System.currentTimeMillis() - start) + "ms");
             if (rightChunk.isEmpty()) {
                 break;
             }

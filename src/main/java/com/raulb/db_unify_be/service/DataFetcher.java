@@ -86,6 +86,7 @@ public class DataFetcher {
         }
 
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        System.out.println("SELECT * FROM " + tableName);
         return jdbcTemplate.queryForList("SELECT * FROM " + tableName);
     }
 

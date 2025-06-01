@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-unify
+  namespace: db-unify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-unify
+  template:
+    metadata:
+      labels:
+        app: db-unify
+    spec:
+      containers:
+        - name: db-unify
+          image: acrdbunify.azurecr.io/db-unify-be:latest
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-unify-service
+  namespace: db-unify
+spec:
+  type: LoadBalancer
+  selector:
+    app: db-unify
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

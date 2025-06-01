@@ -20,9 +20,9 @@ public class BootstrapInitializer implements ApplicationRunner {
 
     private final ConnectionService service;
     private static final Random random = new Random();
-    private static final int TOTAL_RECORDS = 1000;
-    private static final int TOTAL_PERSONS = 300;
-    private static final int COMMON_CNP_COUNT = 300;
+    private static final int TOTAL_RECORDS = 100_000;
+    private static final int TOTAL_PERSONS = 100_000;
+    private static final int COMMON_CNP_COUNT = 5000;
     private List<String> commonCnps;
 
     @Override
