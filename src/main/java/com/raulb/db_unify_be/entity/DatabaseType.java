@@ -9,7 +9,8 @@ public enum DatabaseType {
             case MYSQL -> "jdbc:mysql://" + host + ":" + port + "/" + dbName;
             case ORACLE -> "jdbc:oracle:thin:@" + host + ":" + port + ":" + dbName;
             case SQLSERVER ->
-                    "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";integratedSecurity=true;trustServerCertificate=true";
+                    "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";trustServerCertificate=true";
+//                    "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";integratedSecurity=true;trustServerCertificate=true";
         };
     }
 

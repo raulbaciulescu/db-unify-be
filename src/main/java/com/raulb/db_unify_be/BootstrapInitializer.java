@@ -21,8 +21,8 @@ public class BootstrapInitializer implements ApplicationRunner {
     private final ConnectionService service;
     private static final Random random = new Random();
     private static final int TOTAL_RECORDS = 100_000;
-    private static final int TOTAL_PERSONS = 100_000;
-    private static final int COMMON_CNP_COUNT = 5000;
+    private static final int TOTAL_PERSONS = 200_000;
+    private static final int COMMON_CNP_COUNT = 100000;
     private List<String> commonCnps;
 
     @Override
@@ -77,34 +77,43 @@ public class BootstrapInitializer implements ApplicationRunner {
     }
 
     private void populatePopulation() {
-        String jdbcUrl = "jdbc:sqlserver://localhost:1433;databaseName=population_db;integratedSecurity=true;trustServerCertificate=true";
+        String jdbcUrl = "jdbc:sqlserver://localhost:1433;databaseName=population_db;trustServerCertificate=true";
+        String user = "trino_user";
+        String password = "StrongPassword123!";
 
-        try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
+        try (Connection conn = DriverManager.getConnection(jdbcUrl, user, password)) {
             conn.setAutoCommit(false);
 
             String sql = "INSERT INTO population (cnp, first_name, last_name, location) VALUES (?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 Set<String> used = new HashSet<>();
                 for (int i = 0; i < TOTAL_PERSONS; i++) {
-                    String cnp = (i < COMMON_CNP_COUNT) ? commonCnps.get(i) : generateRandomCnp(used);
-                    pstmt.setString(1, cnp);
-                    pstmt.setString(2, randomFirstName());
-                    pstmt.setString(3, randomLastName());
-                    pstmt.setString(4, randomCity());
+                    try {
+                        String cnp = (i < COMMON_CNP_COUNT) ? commonCnps.get(i) : generateRandomCnp(used);
+                        pstmt.setString(1, cnp);
+                        pstmt.setString(2, randomFirstName());
+                        pstmt.setString(3, randomLastName());
+                        pstmt.setString(4, randomCity());
 
-                    pstmt.addBatch();
+                        pstmt.addBatch();
 
-                    if (i % 100 == 0) {
+                        if (i % 100 == 0) {
+                            pstmt.executeBatch();
+                            conn.commit();
+                        }
                         pstmt.executeBatch();
                         conn.commit();
+                    } catch (Exception e) {
+                        System.err.println("Error inserting record " + i + ": " + e.getMessage());
+                        // Optionally, you can continue or break based on the error
                     }
                 }
-                pstmt.executeBatch();
-                conn.commit();
+                System.out.println("Population table populated.");
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-            System.out.println("Population table populated.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
