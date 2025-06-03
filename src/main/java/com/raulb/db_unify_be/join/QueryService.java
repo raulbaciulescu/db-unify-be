@@ -45,19 +45,55 @@ public class QueryService {
         }
     }
 
-    private List<Join> reorderJoinsByEstimate(List<Join> joins, Map<String, Long> estimates) {
-        return joins.stream()
-                .sorted(Comparator.comparingLong(j -> {
-                    EqualsTo eq = (EqualsTo) j.getOnExpression();
-                    Column left = (Column) eq.getLeftExpression();
-                    Column right = (Column) eq.getRightExpression();
-                    String leftTable = getFullTableName(left.getTable());
-                    String rightTable = getFullTableName(right.getTable());
-                    long leftSize = estimates.getOrDefault(leftTable, 1_000_000L);
-                    long rightSize = estimates.getOrDefault(rightTable, 1_000_000L);
-                    return leftSize + rightSize;
-                }))
-                .toList();
+    private List<Join> sortValidJoins(List<Join> joins, Map<String, Long> estimates, String fromTable) {
+        System.out.println("From table "+ fromTable);
+        List<Join> ordered = new ArrayList<>();
+        Set<String> includedTables = new HashSet<>();
+        includedTables.add(fromTable);
+
+        List<Join> remainingJoins = new ArrayList<>(joins);
+
+        while (!remainingJoins.isEmpty()) {
+            Join next = remainingJoins.stream()
+                    .filter(j -> {
+                        EqualsTo eq = safeEqualsTo(j.getOnExpression());
+                        if (eq == null) return false;
+                        Column left = (Column) eq.getLeftExpression();
+                        Column right = (Column) eq.getRightExpression();
+                        String leftTable = getFullTableName(left.getTable());
+                        String rightTable = getFullTableName(right.getTable());
+                        return (includedTables.contains(leftTable) && !includedTables.contains(rightTable))
+                                || (includedTables.contains(rightTable) && !includedTables.contains(leftTable));
+                    })
+                    .min(Comparator.comparingLong(j -> {
+                        EqualsTo eq = (EqualsTo) j.getOnExpression();
+                        Column left = (Column) eq.getLeftExpression();
+                        Column right = (Column) eq.getRightExpression();
+                        String leftTable = getFullTableName(left.getTable());
+                        String rightTable = getFullTableName(right.getTable());
+                        long leftSize = estimates.getOrDefault(leftTable, 1_000_000L);
+                        long rightSize = estimates.getOrDefault(rightTable, 1_000_000L);
+                        return leftSize + rightSize;
+                    }))
+                    .orElseThrow(() -> new IllegalStateException("No valid join can be applied. Remaining joins: " + remainingJoins));
+
+            ordered.add(next);
+
+            // Marchează ambele tabele implicate în JOIN ca incluse
+            EqualsTo eq = (EqualsTo) next.getOnExpression();
+            Column left = (Column) eq.getLeftExpression();
+            Column right = (Column) eq.getRightExpression();
+            includedTables.add(getFullTableName(left.getTable()));
+            includedTables.add(getFullTableName(right.getTable()));
+
+            remainingJoins.remove(next);
+        }
+
+        return ordered;
+    }
+
+    private EqualsTo safeEqualsTo(Expression expr) {
+        return expr instanceof EqualsTo ? (EqualsTo) expr : null;
     }
 
     private List<Map<String, Object>> executeSingleTableSelect(ParsedQuery parsedQuery) {
@@ -87,7 +123,8 @@ public class QueryService {
         }
 
         // Sortează join-urile în ordine crescătoare după dimensiuni implicite
-        List<Join> optimizedJoins = reorderJoinsByEstimate(parsedQuery.getJoins(), tableEstimates);
+        String fromTable = parsedQuery.getTables().stream().findFirst().get().toString();
+        List<Join> optimizedJoins = sortValidJoins(parsedQuery.getJoins(), tableEstimates, fromTable);
 
         for (Join join : optimizedJoins) {
             System.out.println("Processing join: " + join);
