@@ -3,6 +3,7 @@ package com.raulb.db_unify_be.service;
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.util.ConversionUtil;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
@@ -195,12 +196,24 @@ public class GroupByService {
         EqualsTo equalsTo = (EqualsTo) havingExpression;
         Expression leftExpression = equalsTo.getLeftExpression();
         Expression rightExpression = equalsTo.getRightExpression();
+
         if (leftExpression != null && rightExpression != null) {
+            String leftKey = leftExpression.toString();
+            String rightValue;
+
+            if (rightExpression instanceof StringValue stringValue) {
+                rightValue = stringValue.getValue(); // fără ghilimele
+            } else {
+                rightValue = rightExpression.toString(); // fallback
+            }
+
             rows = rows.stream()
-                    .filter(map -> Objects.equals(map.get(leftExpression.toString()), rightExpression.toString()))
+                    .filter(map -> Objects.equals(map.get(leftKey), rightValue))
                     .collect(Collectors.toList());
-            System.out.println("rows after having equals" + rows);
+
+            System.out.println("rows after having equals: " + rows);
         }
+
         return rows;
     }
 }

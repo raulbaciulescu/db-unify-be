@@ -37,11 +37,10 @@ public class QueryService {
 
         if (parsedQuery.getJoins().isEmpty()) {
             rows = executeSingleTableSelect(parsedQuery);
-            boolean isDone = rows.size() < DEFAULT_LIMIT;
-            return new QueryResult(rows, offset + DEFAULT_LIMIT, true);
+            return new QueryResult(rows);
         } else {
             List<Map<String, Object>> result = executeJoinQuery(parsedQuery);
-            return new QueryResult(result, 1000, true);
+            return new QueryResult(result);
         }
     }
 
@@ -259,11 +258,12 @@ public class QueryService {
             List<String> groupByList = groupByExpression.getGroupByExpressionList().stream().map(Object::toString).toList();
             rowsAfterGroupBy = groupByService.doGroupBy(groupByList, convertedList);
             convertedList = groupByService.filterRowsGroupBy(parsedQuery, rowsAfterGroupBy, groupByList);
+
+            if (parsedQuery.getHavingCondition() != null) {
+                convertedList = groupByService.handleHaving(parsedQuery.getHavingCondition(), convertedList);
+            }
+
             return convertToListOfObjectMaps(convertedList);
-            //Expression havingExpression = parsedQuery.getHavingCondition();
-//            if (havingExpression != null) {
-//                rows = groupByService.handleHaving(havingExpression, convertedList);
-//            }
         } else
             return convertToListOfObjectMaps(convertedList);
     }

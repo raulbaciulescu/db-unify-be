@@ -3,6 +3,7 @@ package com.raulb.db_unify_be.service;
 import com.raulb.db_unify_be.entity.CachedDataSource;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.DatabaseType;
+import com.raulb.db_unify_be.exception.DataSourceConnectionException;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,6 @@ public class DynamicDataSourceFactory {
                 .map(CachedDataSource::connection)
                 .filter(conn -> conn.getName().equalsIgnoreCase(dbName))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new DataSourceConnectionException("No datasource for: " + dbName));
     }
 }

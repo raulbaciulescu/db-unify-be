@@ -2,6 +2,7 @@ package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.entity.QueryType;
+import com.raulb.db_unify_be.exception.SqlParsingException;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -30,12 +31,10 @@ public class SqlParsingService {
             if (statement instanceof Select select) {
                 return parseSelect(select, sql);
             } else {
-                // Later can add support for INSERT, UPDATE, DELETE etc
                 return null;
             }
-
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse SQL: " + e.getMessage(), e);
+            throw new SqlParsingException("Failed to parse SQL: " + e.getMessage(), e);
         }
     }
 
@@ -76,13 +75,6 @@ public class SqlParsingService {
             // HAVING
             if (plainSelect.getHaving() != null) {
                 havingCondition = plainSelect.getHaving();
-            }
-
-            // ORDER BY
-            if (plainSelect.getOrderByElements() != null) {
-                orderByColumns = plainSelect.getOrderByElements().stream()
-                        .map(Object::toString)
-                        .collect(Collectors.toList());
             }
         }
 
