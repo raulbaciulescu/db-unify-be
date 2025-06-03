@@ -7,6 +7,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -22,7 +23,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SqlParsingService {
-
     public ParsedQuery parse(String sql) {
         try {
             Statement statement = CCJSqlParserUtil.parse(sql);
@@ -30,7 +30,7 @@ public class SqlParsingService {
             if (statement instanceof Select select) {
                 return parseSelect(select, sql);
             } else {
-                // Later you can add support for INSERT, UPDATE, DELETE etc
+                // Later can add support for INSERT, UPDATE, DELETE etc
                 return null;
             }
 
@@ -42,11 +42,11 @@ public class SqlParsingService {
     private ParsedQuery parseSelect(Select select, String originalSql) throws JSQLParserException {
         Set<String> tables = new HashSet<>();
         List<String> columns = new ArrayList<>();
-        List<String> groupByColumns = new ArrayList<>();
+        GroupByElement groupByColumns = null;
         List<String> orderByColumns = new ArrayList<>();
         List<Join> joins = new ArrayList<>();
         Expression whereCondition = null;
-        String havingCondition = null;
+        Expression havingCondition = null;
 
         Select selectBody = select.getSelectBody();
 
@@ -69,9 +69,13 @@ public class SqlParsingService {
                 whereCondition = plainSelect.getWhere();
             }
 
+            if (plainSelect.getGroupBy() != null) {
+                groupByColumns = plainSelect.getGroupBy();
+            }
+
             // HAVING
             if (plainSelect.getHaving() != null) {
-                havingCondition = plainSelect.getHaving().toString();
+                havingCondition = plainSelect.getHaving();
             }
 
             // ORDER BY

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.Join;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public class ParsedQuery {
     private Set<String> tables;
     private List<String> selectedColumns;
     private Expression whereCondition;
-    private List<String> groupByColumns;
-    private String havingCondition;
+    private GroupByElement groupByColumns;
+    private Expression havingCondition;
     private List<String> orderByColumns;
     private String originalSql;
     private List<Join> joins;

@@ -6,11 +6,14 @@ import com.raulb.db_unify_be.entity.ParsedQuery;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
 import com.raulb.db_unify_be.service.DynamicDataSourceFactory;
 import com.raulb.db_unify_be.service.DataFetcher;
+import com.raulb.db_unify_be.service.GroupByService;
 import com.raulb.db_unify_be.service.SqlParsingService;
 import lombok.RequiredArgsConstructor;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.Join;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,7 @@ public class QueryService {
     private final JoinStrategySelector joinStrategySelector;
     private final DataFetcher dataFetcher;
     private final DynamicDataSourceFactory dataSourceFactory;
+    private final GroupByService groupByService;
 
     private static final int DEFAULT_LIMIT = 5_000_000;
 
@@ -64,6 +68,10 @@ public class QueryService {
         List<Map<String, Object>> rows;
 
         rows = dataFetcher.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+
+        if (parsedQuery.getGroupByColumns() != null) {
+            return handleGroupBy(parsedQuery, rows);
+        } else
         return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 
@@ -78,12 +86,16 @@ public class QueryService {
             tableEstimates.put(table, estimated);
         }
 
-        // 🧠 Sortează join-urile în ordine crescătoare după dimensiuni implicite
+        // Sortează join-urile în ordine crescătoare după dimensiuni implicite
         List<Join> optimizedJoins = reorderJoinsByEstimate(parsedQuery.getJoins(), tableEstimates);
 
         for (Join join : optimizedJoins) {
             System.out.println("Processing join: " + join);
             currentResult = performJoin(join, currentResult, parsedQuery, tableEstimates);
+        }
+
+        if (parsedQuery.getGroupByColumns() != null) {
+            return handleGroupBy(parsedQuery, currentResult);
         }
 
         return filterSelectedColumns(currentResult, parsedQuery.getSelectedColumns());
@@ -168,6 +180,39 @@ public class QueryService {
                 .toList();
     }
 
+    public List<Map<String, String>> convertToListOfStringMaps(List<Map<String, Object>> rows) {
+        List<Map<String, String>> result = new ArrayList<>();
+
+        for (Map<String, Object> row : rows) {
+            Map<String, String> stringRow = new HashMap<>();
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                stringRow.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+            }
+            result.add(stringRow);
+        }
+
+        return result;
+    }
+
+    private List<Map<String, Object>> handleGroupBy(ParsedQuery parsedQuery, List<Map<String, Object>> rows) {
+        List<Map<String, String>> convertedList = convertToListOfStringMaps(rows);
+        GroupByElement groupByExpression = parsedQuery.getGroupByColumns();
+        Map<List<String>, List<Map<String, String>>> rowsAfterGroupBy;
+
+        if (groupByExpression != null) {
+            List<String> groupByList = groupByExpression.getGroupByExpressionList().stream().map(Object::toString).toList();
+            rowsAfterGroupBy = groupByService.doGroupBy(groupByList, convertedList);
+            convertedList = groupByService.filterRowsGroupBy(parsedQuery, rowsAfterGroupBy, groupByList);
+            return convertToListOfObjectMaps(convertedList);
+            //Expression havingExpression = parsedQuery.getHavingCondition();
+//            if (havingExpression != null) {
+//                rows = groupByService.handleHaving(havingExpression, convertedList);
+//            }
+        } else
+            return convertToListOfObjectMaps(convertedList);
+    }
+
+
     private String getFullTableName(Table table) {
         String schema = table.getSchemaName();
         String name = table.getName();
@@ -184,8 +229,34 @@ public class QueryService {
         return dotIndex > 0 ? fullTableName.substring(dotIndex + 1) : fullTableName;
     }
 
-    private static class ResultMeta {
-        int nextOffset;
-        boolean isDone;
+    public List<Map<String, Object>> convertToListOfObjectMaps(List<Map<String, String>> rows) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Map<String, String> row : rows) {
+            Map<String, Object> objectRow = new HashMap<>();
+            for (Map.Entry<String, String> entry : row.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+
+                if (value == null) {
+                    objectRow.put(key, null);
+                } else if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                    objectRow.put(key, Boolean.parseBoolean(value));
+                } else {
+                    try {
+                        objectRow.put(key, Integer.parseInt(value));
+                    } catch (NumberFormatException e1) {
+                        try {
+                            objectRow.put(key, Double.parseDouble(value));
+                        } catch (NumberFormatException e2) {
+                            objectRow.put(key, value);
+                        }
+                    }
+                }
+            }
+            result.add(objectRow);
+        }
+
+        return result;
     }
 }
