@@ -72,7 +72,7 @@ public class QueryService {
         if (parsedQuery.getGroupByColumns() != null) {
             return handleGroupBy(parsedQuery, rows);
         } else
-        return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
+            return filterSelectedColumns(rows, parsedQuery.getSelectedColumns());
     }
 
     private List<Map<String, Object>> executeJoinQuery(ParsedQuery parsedQuery) {
@@ -115,6 +115,8 @@ public class QueryService {
         String rightTable = getFullTableName(rightCol.getTable());
         String leftKey = leftCol.getColumnName();
         String rightKey = rightCol.getColumnName();
+        String leftPrefix = leftTable;  // Ex: population_db.population
+        String rightPrefix = rightTable; // Ex: decathlon.decathlon_customers
 
         List<Map<String, Object>> leftRows = currentResult;
         if (leftRows == null) {
@@ -122,6 +124,9 @@ public class QueryService {
             String tableName = getSimpleTableName(leftTable);
             long start = System.currentTimeMillis();
             leftRows = dataFetcher.selectFromTableWithWhere(conn.getId(), tableName, parsedQuery.getWhereCondition());
+            leftRows = leftRows.stream()
+                    .map(row -> prefixMapKeys(row, leftPrefix))
+                    .toList();
             System.out.println("Fetched left in " + (System.currentTimeMillis() - start) + "ms");
         }
 
@@ -139,11 +144,17 @@ public class QueryService {
             List<Map<String, Object>> rightChunk = dataFetcher.selectChunkFromTableWithWhere(
                     rightConn.getId(), rightTableName, parsedQuery.getWhereCondition(), DEFAULT_LIMIT, pageOffset);
             System.out.println("Fetched right in " + (System.currentTimeMillis() - start) + "ms");
+            List<Map<String, Object>> prefixedRight = rightChunk.stream()
+                    .map(row -> prefixMapKeys(row, rightPrefix))
+                    .toList();
+
             if (rightChunk.isEmpty()) {
                 break;
             }
 
-            List<Map<String, Object>> partialJoin = algorithm.join(leftRows, rightChunk, leftKey, rightKey);
+            List<Map<String, Object>> partialJoin = algorithm.join(leftRows, prefixedRight,
+                    leftPrefix + "." + leftKey,
+                    rightPrefix + "." + rightKey);
             result.addAll(partialJoin);
 
             if (rightChunk.size() < DEFAULT_LIMIT) {
@@ -153,6 +164,14 @@ public class QueryService {
             }
         }
 
+        return result;
+    }
+
+    private Map<String, Object> prefixMapKeys(Map<String, Object> row, String prefix) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            result.put((prefix + "." + entry.getKey()).toLowerCase(), entry.getValue());
+        }
         return result;
     }
 
