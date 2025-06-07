@@ -11,7 +11,7 @@ public class JoinStrategySelector {
         } else if (leftSize < 1_000_000 && rightSize < 1_000_000) {
             return new HashJoinAlgorithm();
         } else if (leftSize < 10_000_000 && rightSize < 10_000_000) {
-            return new HashJoinAlgorithm(); // 👈 înlocuit
+            return new HashJoinAlgorithm();
         } else {
             return new SortMergeJoinAlgorithm();
         }

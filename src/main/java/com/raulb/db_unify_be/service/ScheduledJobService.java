@@ -3,7 +3,6 @@ package com.raulb.db_unify_be.service;
 import com.raulb.db_unify_be.dtos.QueryResult;
 import com.raulb.db_unify_be.entity.ScheduledJob;
 import com.raulb.db_unify_be.entity.ScheduledJobResult;
-import com.raulb.db_unify_be.join.QueryService;
 import com.raulb.db_unify_be.repository.ScheduledJobRepository;
 import com.raulb.db_unify_be.repository.ScheduledJobResultRepository;
 import jakarta.annotation.PostConstruct;

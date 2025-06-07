@@ -2,7 +2,7 @@ package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.entity.CachedDataSource;
 import com.raulb.db_unify_be.entity.DatabaseType;
-import com.raulb.db_unify_be.join.SqlDialect;
+import com.raulb.db_unify_be.join.api.SqlDialect;
 import com.raulb.db_unify_be.join.SqlDialectFactory;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.expression.Expression;
@@ -14,27 +14,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import com.raulb.db_unify_be.entity.CachedDataSource;
-import com.raulb.db_unify_be.entity.DatabaseType;
 import com.raulb.db_unify_be.entity.WhereConditions;
-import com.raulb.db_unify_be.join.SqlDialect;
-import com.raulb.db_unify_be.join.SqlDialectFactory;
-import lombok.RequiredArgsConstructor;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor

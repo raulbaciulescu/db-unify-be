@@ -40,10 +40,10 @@ public class GroupByService {
             Pattern pMin = Pattern.compile("^min\\((.+)\\)$");
             Pattern pMax = Pattern.compile("^max\\((.+)\\)$");
             Pattern pSum = Pattern.compile("^sum\\((.+)\\)$");
-            Matcher matcherCount = pCount.matcher(selectItem);
-            Matcher matcherMin = pMin.matcher(selectItem);
-            Matcher matcherMax = pMax.matcher(selectItem);
-            Matcher matcherSum = pSum.matcher(selectItem);
+            Matcher matcherCount = pCount.matcher(selectItem.toLowerCase());
+            Matcher matcherMin = pMin.matcher(selectItem.toLowerCase());
+            Matcher matcherMax = pMax.matcher(selectItem.toLowerCase());
+            Matcher matcherSum = pSum.matcher(selectItem.toLowerCase());
 
             if (matcherCount.find()) {
                 operations.add("count");

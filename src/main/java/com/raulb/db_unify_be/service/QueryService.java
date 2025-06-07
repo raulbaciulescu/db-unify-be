@@ -1,8 +1,10 @@
-package com.raulb.db_unify_be.join;
+package com.raulb.db_unify_be.service;
 
 import com.raulb.db_unify_be.dtos.QueryResult;
 import com.raulb.db_unify_be.entity.Connection;
 import com.raulb.db_unify_be.entity.ParsedQuery;
+import com.raulb.db_unify_be.join.JoinStrategySelector;
+import com.raulb.db_unify_be.join.RowCountEstimator;
 import com.raulb.db_unify_be.join.api.JoinAlgorithm;
 import com.raulb.db_unify_be.service.DynamicDataSourceFactory;
 import com.raulb.db_unify_be.service.DataFetcher;

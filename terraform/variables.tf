@@ -39,5 +39,5 @@ variable "postgres_admin_password" {
 
 variable "postgres_db_name" {
   type    = string
-  default = "db-unify-boostrap-db"
+  default = "boostrapclouddb"
 }

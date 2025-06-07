@@ -2,9 +2,9 @@ spring:
   application:
     name: db-unify-be
   datasource:
-    url: jdbc:postgresql://pg-flexible-server-db-unify.postgres.database.azure.com:5432/db-unify-boostrap-db
+    url: jdbc:postgresql://pg-flexible-server-db-unify.postgres.database.azure.com:5432/boostrapclouddb
     username: pgadmin
-    password: password123
+    password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:
