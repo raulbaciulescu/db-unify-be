@@ -14,6 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DbUnifyException.class)
     public ResponseEntity<Map<String, Object>> handleDbUnifyException(DbUnifyException ex) {
+        ex.printStackTrace();
         Map<String, Object> error = new LinkedHashMap<>();
         error.put("error", ex.getClass().getSimpleName());
         error.put("message", ex.getMessage());
@@ -24,6 +25,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleOtherExceptions(Exception ex) {
+        ex.printStackTrace();
         Map<String, Object> error = new LinkedHashMap<>();
         error.put("error", "InternalServerError");
         error.put("message", ex.getMessage());

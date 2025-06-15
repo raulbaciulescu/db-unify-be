@@ -31,7 +31,7 @@ public class QueryService {
     private final DynamicDataSourceFactory dataSourceFactory;
     private final GroupByService groupByService;
 
-    private static final int DEFAULT_LIMIT = 5_000_000;
+    private static final int DEFAULT_LIMIT = 100_000;
 
     public QueryResult execute(String sql, int offset) {
         ParsedQuery parsedQuery = sqlParsingService.parse(sql);
@@ -170,9 +170,8 @@ public class QueryService {
 
         Connection rightConn = dataSourceFactory.getCachedByName(getSchemaName(rightTable));
         String rightTableName = getSimpleTableName(rightTable);
-        long estimatedRightSize = estimates.getOrDefault(rightTable, 1_000_000L);
-        JoinAlgorithm algorithm = joinStrategySelector.choose(leftRows.size(), estimatedRightSize);
-
+//        long estimatedRightSize = estimates.getOrDefault(rightTable, 1_000_000L);
+        JoinAlgorithm algorithm = joinStrategySelector.pickHash();
         List<Map<String, Object>> result = new ArrayList<>();
         int pageOffset = 0;
         boolean done = false;

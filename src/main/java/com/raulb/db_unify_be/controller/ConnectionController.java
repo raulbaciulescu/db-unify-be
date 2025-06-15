@@ -27,6 +27,7 @@ public class ConnectionController {
 
     @PostMapping
     public ResponseEntity<Connection> createConnection(@RequestBody Connection conn) {
+        System.out.println("Creating connection: " + conn);
         Connection created = connectionService.createAndConnect(conn); // throws if connection fails
         return ResponseEntity.ok(created);
     }

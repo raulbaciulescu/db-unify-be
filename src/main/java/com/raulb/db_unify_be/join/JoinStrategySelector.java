@@ -16,4 +16,8 @@ public class JoinStrategySelector {
             return new SortMergeJoinAlgorithm();
         }
     }
+
+    public JoinAlgorithm pickHash() {
+        return new HashJoinAlgorithm();
+    }
 }

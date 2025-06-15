@@ -10,3 +10,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+dbunify:
+  encryption:
+    secret: db-unify-secret-key-202_

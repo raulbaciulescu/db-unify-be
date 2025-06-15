@@ -7,7 +7,8 @@ public enum DatabaseType {
         return switch (this) {
             case POSTGRES -> "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
             case MYSQL -> "jdbc:mysql://" + host + ":" + port + "/" + dbName;
-            case ORACLE -> "jdbc:oracle:thin:@" + host + ":" + port + ":" + dbName;
+            case ORACLE -> "jdbc:oracle:thin:@//" + host + ":" + port + "/" + dbName
+                    + "?defaultRowPrefetch=500000&tcpNoDelay=true";
             case SQLSERVER ->
                     "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";trustServerCertificate=true";
 //                    "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + dbName + ";integratedSecurity=true;trustServerCertificate=true";
